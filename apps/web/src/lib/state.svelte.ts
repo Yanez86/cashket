@@ -50,7 +50,9 @@ const MESSAGES: Record<string, string> = {
   crossSite: 'Richiesta rifiutata.',
   unreachable: 'Il server non risponde.',
   offline: 'Sei offline: non è stato salvato.',
-  unauthorized: 'Accedi di nuovo.'
+  unauthorized: 'Accedi di nuovo.',
+  captureDone: 'Questa spesa è già stata sistemata in una sessione.',
+  storageFull: 'Il telefono non ha spazio per tenere la spesa: riprova con la rete.'
 };
 
 export function errorMessage(e: unknown): string {

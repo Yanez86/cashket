@@ -5,6 +5,7 @@
   import type { User } from '@cashket/shared';
   import { app, errorMessage, setUser } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
+  import { clearApiCache } from '$lib/offline.svelte';
   import Icon from '$lib/Icon.svelte';
 
   let error = $state('');
@@ -25,6 +26,7 @@
 
   async function logout() {
     await post('/auth/logout').catch(() => {});
+    await clearApiCache();
     setUser(null);
     await goto('/login');
   }

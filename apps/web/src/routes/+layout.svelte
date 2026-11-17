@@ -8,6 +8,7 @@
   import Icon from '$lib/Icon.svelte';
   import Splash from '$lib/Splash.svelte';
   import { app, loadSession } from '$lib/state.svelte';
+  import { flushQueue, initOffline, queue, refreshQueue } from '$lib/offline.svelte';
 
   let { children }: { children: Snippet } = $props();
 
@@ -22,6 +23,22 @@
       splashMessage = navigator.onLine ? 'Il server non risponde.' : 'Sei offline.';
     }
   });
+
+  // Back online: send what was typed meanwhile.
+  function onNetworkChange() {
+    queue.online = navigator.onLine;
+    if (navigator.onLine) void flushQueue();
+  }
+
+  // Once signed in (or as another person), the device queue is that person's: send it and count the rest.
+  const userId = $derived(app.user?.id);
+  $effect(() => {
+    if (!ready || userId == null) return;
+    initOffline(userId);
+    void flushQueue().then(refreshQueue);
+  });
+
+  const badge = $derived(queue.count + queue.pending.length);
 
   // Pages that work without signing in.
   const PUBLIC = ['/login', '/setup', '/register', '/reset'];
@@ -75,13 +92,17 @@
   });
 </script>
 
+<svelte:window ononline={onNetworkChange} onoffline={onNetworkChange} />
+
 {#if allowed}
   {@render children()}
   {#if app.user}
   <nav class="tabbar" aria-label="Navigazione principale">
     {#each tabs as tab (tab.href)}
       <a href={tab.href} aria-current={activeTab === tab.href ? 'page' : undefined}>
-        <span class="pill"><Icon name={tab.icon} /></span>
+        <span class="pill"
+          ><Icon name={tab.icon} />{#if tab.href === '/coda' && badge}<span class="badge" aria-label="{badge} in coda">{badge}</span>{/if}</span
+        >
         {tab.label}
       </a>
     {/each}
@@ -128,6 +149,25 @@
     width: 56px;
     height: 32px;
     border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pill {
+    position: relative;
+  }
+  .badge {
+    position: absolute;
+    top: -4px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 11px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;

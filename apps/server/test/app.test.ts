@@ -78,7 +78,14 @@ test('setup, invite, budget', async () => {
   assert.equal(view.buckets.find((b: { id: number }) => b.id === spesa.id).balanceCents, 45000);
   assert.equal(view.unassignedCents, 0);
 
+  // An expense typed offline and sent twice is saved once.
+  const capture = { amountCents: 1250, spentAt: '2026-11-17T12:05:00.000Z', accountId: conto.id, note: 'Pranzo', clientId: 'phone-0001' };
+  const first = (await admin('POST', '/api/captures', capture)).json();
+  assert.equal((await admin('POST', '/api/captures', capture)).json().id, first.id);
+  assert.deepEqual((await admin('GET', '/api/captures/summary')).json(), { count: 1, totalCents: 1250 });
+
   // Bea sees none of it.
+  assert.equal((await bea('GET', '/api/captures')).json().length, 0);
   assert.equal((await bea('GET', `/api/buckets/${spesa.id}`)).statusCode, 404);
   assert.equal((await bea('GET', '/api/budget/2026-11')).json().incomeCents, 0);
 

@@ -7,6 +7,7 @@ import { requireUser } from '../auth.ts';
 import { createAccount, listAccounts, updateAccount } from '../services/accounts.ts';
 import { createBucket, getBucket, listBuckets, reorderBuckets, setArchived, updateBucket } from '../services/buckets.ts';
 import { addIncome, deleteIncome, listIncomes } from '../services/incomes.ts';
+import { createCapture, deleteCapture, listQueue, queueSummary, updateCapture } from '../services/captures.ts';
 import { allocate, budgetView, closePeriod, moveBetween, reopenPeriod } from '../services/budget.ts';
 import { zBucketInput, zCents, zDate, zId, zMonth, zName } from '../validation.ts';
 
@@ -82,6 +83,39 @@ export async function moneyRoutes(app: FastifyInstance, { sqlite: db }: AppConte
 
   app.delete('/incomes/:id', async (request) => {
     deleteIncome(db, requireUser(request).id, params.parse(request.params).id);
+    return { ok: true };
+  });
+
+  // ---------------------------------------------------------------- the capture queue
+  const zSpentAt = z.string().datetime({ offset: true }).max(40);
+  const zNote = z.string().trim().max(200).nullable().transform((v) => v || null);
+
+  app.get('/captures', async (request) => listQueue(db, requireUser(request).id));
+
+  app.get('/captures/summary', async (request) => queueSummary(db, requireUser(request).id));
+
+  app.post('/captures', async (request) => {
+    const user = requireUser(request);
+    const body = z
+      .object({
+        amountCents: zCents.min(1),
+        spentAt: zSpentAt,
+        accountId: zId.nullable().default(null),
+        note: zNote.default(null),
+        clientId: z.string().min(8).max(64).nullable().default(null)
+      })
+      .parse(request.body);
+    return createCapture(db, user.id, body);
+  });
+
+  app.patch('/captures/:id', async (request) => {
+    const user = requireUser(request);
+    const body = z.object({ amountCents: zCents.min(1), spentAt: zSpentAt, accountId: zId.nullable(), note: zNote }).partial().parse(request.body);
+    return updateCapture(db, user.id, params.parse(request.params).id, body);
+  });
+
+  app.delete('/captures/:id', async (request) => {
+    deleteCapture(db, requireUser(request).id, params.parse(request.params).id);
     return { ok: true };
   });
 

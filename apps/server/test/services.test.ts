@@ -144,3 +144,24 @@ test('people do not see each other', () => {
   assert.equal(code(() => setArchived(db, a.id, bBucket.id, true)), 'notFound');
   assert.equal(listBuckets(db, a.id).length, 1);
 });
+
+test('captures: queue, idempotent client id, edit, delete, summary in the month', async () => {
+  const { createCapture, deleteCapture, listQueue, queueSummary, updateCapture } = await import('../src/services/captures.ts');
+  const { db, user } = person();
+  const [cash] = listAccounts(db, user.id);
+  const caffe = createCapture(db, user.id, { amountCents: 140, spentAt: '2026-11-17T07:12:00Z', accountId: cash.id, note: 'Caffè', clientId: 'c1' });
+  assert.equal(caffe.amountCents, 140);
+  assert.equal(createCapture(db, user.id, { amountCents: 140, spentAt: '2026-11-17T07:12:00Z', accountId: cash.id, note: 'Caffè', clientId: 'c1' }).id, caffe.id);
+  const pranzo = createCapture(db, user.id, { amountCents: 1250, spentAt: '2026-11-17T12:05:00Z', accountId: null, note: null });
+  assert.deepEqual(listQueue(db, user.id).map((c) => c.id), [pranzo.id, caffe.id]);
+  assert.deepEqual(queueSummary(db, user.id), { count: 2, totalCents: 1390 });
+  assert.equal(updateCapture(db, user.id, pranzo.id, { amountCents: 1300, note: 'Pranzo' }).note, 'Pranzo');
+  assert.equal(budgetView(db, user, '2026-11').queue.totalCents, 1440);
+  deleteCapture(db, user.id, caffe.id);
+  assert.equal(queueSummary(db, user.id).count, 1);
+  // Someone else's account cannot be used.
+  const other = createUser(db, { name: 'B', email: 'b2@casa.it', passwordHash: 'x', role: 'member' });
+  assert.equal(code(() => createCapture(db, other.id, { amountCents: 1, spentAt: '2026-11-17T07:00:00Z', accountId: cash.id, note: null })), 'notFound');
+  db.prepare("UPDATE captures SET status = 'matched' WHERE id = ?").run(pranzo.id);
+  assert.equal(code(() => deleteCapture(db, user.id, pranzo.id)), 'captureDone');
+});

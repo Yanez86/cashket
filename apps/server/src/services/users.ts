@@ -13,6 +13,7 @@ export interface UserRow {
   theme: User['theme'];
   percent_base: User['percentBase'];
   active: number;
+  last_session_at: string | null;
 }
 
 export const toUser = (r: UserRow): User => ({
@@ -24,7 +25,8 @@ export const toUser = (r: UserRow): User => ({
   locale: r.locale,
   timezone: r.timezone,
   theme: r.theme,
-  percentBase: r.percent_base
+  percentBase: r.percent_base,
+  lastSessionAt: r.last_session_at
 });
 
 export const countUsers = (db: Sqlite) => (db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n;

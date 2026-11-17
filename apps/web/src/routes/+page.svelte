@@ -68,6 +68,7 @@
           <div class="muted small right">
             <p>restano nei bucket</p>
             <p>su {formatCents(assigned)} assegnati</p>
+            {#if view.queue.totalCents}<p>−{formatCents(view.queue.totalCents)} in coda</p>{/if}
           </div>
         </div>
         <div class="bar" style="margin: 14px 0 10px">
@@ -79,6 +80,14 @@
           <p class="state status-ink-ok"><Icon name="check" size={16} stroke={2.5} />Nel budget</p>
         {/if}
       </section>
+
+      {#if view.queue.count}
+        <a class="queue" href="/coda">
+          <Icon name="tray" />
+          <span><strong>{view.queue.count} {view.queue.count === 1 ? 'spesa' : 'spese'} in coda</strong> · {formatCents(view.queue.totalCents)} non ancora nei bucket</span>
+          <Icon name="chevron" size={20} stroke={2.5} />
+        </a>
+      {/if}
 
       {#if view.status === 'closed'}
         <p class="notice">Mese chiuso: i residui sono passati al mese successivo.</p>
@@ -100,7 +109,10 @@
 
       <div class="list-head">
         <h2 class="section-title">Bucket</h2>
-        <a class="small" href="/entrate?month={view.incomeMonth}">Entrate base {formatCents(view.incomeCents)}</a>
+        <div class="row small">
+          {#if view.status === 'open' && view.buckets.length > 1}<a href="/sposta?month={month}">Sposta</a> ·{/if}
+          <a href="/entrate?month={view.incomeMonth}">Entrate base {formatCents(view.incomeCents)}</a>
+        </div>
       </div>
       <div class="stack" style="gap: 12px">
         {#each view.buckets as bucket (bucket.id)}
@@ -146,6 +158,20 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+  }
+  .queue {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .queue span {
+    flex: 1;
   }
   .list-head {
     display: flex;

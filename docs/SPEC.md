@@ -315,8 +315,10 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
 ## 11. Roadmap
 
 1. **Fondamenta** ✅: scheletro, utenti e accesso, conti, bucket e periodi, registro dei movimenti di budget,
-   entrate inserite a mano. Gli spostamenti tra bucket esistono nell'API, l'interfaccia arriva con la fase 2.
-2. **Uso quotidiano**: cattura con coda offline, home dei bucket, chiusura del periodo.
+   entrate inserite a mano.
+2. **Uso quotidiano** ✅: cattura con tastierino e coda offline (service worker, invio con `clientId`),
+   pagina Coda con modifica ed eliminazione, badge sulla tab, stima della coda nella home, spostamenti tra
+   bucket, chiusura del periodo.
 3. **Sessione**: import CSV con profili, doppioni, abbinamento, regole, revisione, lotti annullabili.
 4. **Promemoria**: badge e push.
 5. **Import automatico**: Enable Banking, schermata Connessioni; poi email di notifica per PayPal.

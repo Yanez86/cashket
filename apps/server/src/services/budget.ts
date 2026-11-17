@@ -7,6 +7,7 @@ import { insertedId, type Sqlite } from '../db/core.ts';
 import { badRequest, conflict, notFound } from '../errors.ts';
 import { bucketRows, fillOf, leftoverOf, overspendOf, toBucket } from './buckets.ts';
 import { baseIncome } from './incomes.ts';
+import { queueSummary } from './captures.ts';
 import type { UserRow } from './users.ts';
 
 interface PeriodRow {
@@ -86,7 +87,8 @@ export function budgetView(db: Sqlite, user: UserRow, month: string): BudgetView
         rolloverCents: s?.rollover ?? 0,
         status: bucketStatus(r.kind, balanceCents)
       };
-    })
+    }),
+    queue: queueSummary(db, user.id)
   };
 }
 
