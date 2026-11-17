@@ -8,8 +8,8 @@ abbina le spese ai movimenti della banca e tu le assegni ai bucket.
 
 ## Stato
 
-**In progettazione.** Il repository contiene la specifica e lo scheletro del progetto: non è ancora
-un'app utilizzabile.
+**Fase 1 di 6.** Si può già entrare, invitare la famiglia, creare conti e bucket, registrare le entrate,
+riempire i bucket del mese e chiuderlo. Mancano ancora le spese: arrivano con la coda e la sessione.
 
 - Specifica completa: **[docs/SPEC.md](docs/SPEC.md)**
 - Stack e struttura: gli stessi di [Mealler](https://github.com/Yanez86/mealler)
@@ -17,8 +17,8 @@ un'app utilizzabile.
 | Funzione | Stato |
 | --- | --- |
 | Scheletro: server, PWA, Docker, schema del database | ✅ |
-| Utenti, inviti, accesso | ⏳ |
-| Conti, bucket fissi / a percentuale / resto, periodi | ⏳ |
+| Utenti, inviti, accesso, link per la nuova password | ✅ |
+| Conti, bucket fissi / a percentuale / resto, entrate, assegnazione e chiusura del mese | ✅ |
 | Cattura rapida con coda offline | ⏳ |
 | Sessione: import CSV, abbinamento, regole, revisione | ⏳ |
 | Promemoria (badge e push) | ⏳ |
@@ -44,6 +44,12 @@ pnpm dev          # server su :3000, web su :5173 con proxy verso /api
 pnpm typecheck
 pnpm test
 ```
+
+I test dei servizi (`apps/server/test/services.test.ts`, `access.test.ts`) girano sul SQLite integrato in Node
+e non hanno bisogno di dipendenze native; `app.test.ts` prova l'API HTTP intera.
+
+Amministratore senza accesso: `docker exec cashket node dist/index.js reset-password nome@esempio.it`
+stampa un link per scegliere una nuova password.
 
 ## Installazione con Docker
 

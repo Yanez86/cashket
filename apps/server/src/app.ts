@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Fastify, { type FastifyInstance } from 'fastify';
+import cookie from '@fastify/cookie';
+import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Config } from './config.ts';
-import type { Sqlite } from './db/index.ts';
+import type { Sqlite } from './db/core.ts';
+import { loadUser } from './auth.ts';
+import { errorHandler, forbidden } from './http.ts';
+import { authRoutes } from './routes/auth.ts';
+import { adminRoutes } from './routes/admin.ts';
+import { moneyRoutes } from './routes/money.ts';
 import { PERMISSIONS_POLICY, contentSecurityPolicy } from './security.ts';
 
 export interface AppContext {
@@ -18,6 +25,11 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
     trustProxy: ctx.config.trustProxy,
     bodyLimit: 1024 * 1024
   });
+
+  app.setErrorHandler(errorHandler);
+  await app.register(cookie);
+  await app.register(rateLimit, { global: false });
+  app.decorateRequest('user', null);
 
   const csp = contentSecurityPolicy(ctx.config.publicDir);
   app.addHook('onSend', async (request, reply, payload) => {
@@ -34,15 +46,17 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
 
   await app.register(
     async (api) => {
-      api.addHook('onRequest', async (_request, reply) => {
+      api.addHook('onRequest', async (request, reply) => {
+        // Browsers say where a request comes from. A page on another site, or on a sibling subdomain
+        // (which SameSite=Lax cookies do not stop), may read nothing here and must not change anything.
+        const site = request.headers['sec-fetch-site'];
+        if (!['GET', 'HEAD'].includes(request.method) && (site === 'cross-site' || site === 'same-site')) throw forbidden('crossSite');
+        request.user = loadUser(ctx.sqlite, request, reply);
         reply.header('Cache-Control', 'no-store');
       });
-      // First endpoint: what the PWA needs before signing in. Auth, accounts, buckets, captures and the
-      // session routes arrive with the roadmap in docs/SPEC.md §11.
-      api.get('/status', async () => {
-        const users = ctx.sqlite.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number };
-        return { name: 'Cashket', version: ctx.config.version, setupRequired: users.n === 0 };
-      });
+      await api.register(async (scope) => authRoutes(scope, ctx));
+      await api.register(async (scope) => adminRoutes(scope, ctx), { prefix: '/admin' });
+      await api.register(async (scope) => moneyRoutes(scope, ctx));
     },
     { prefix: '/api' }
   );

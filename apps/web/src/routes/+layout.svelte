@@ -3,27 +3,44 @@
 <script lang="ts">
   import '../app.css';
   import { onMount, type Snippet } from 'svelte';
-  import { onNavigate } from '$app/navigation';
+  import { goto, onNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import Icon from '$lib/Icon.svelte';
   import Splash from '$lib/Splash.svelte';
+  import { app, loadSession } from '$lib/state.svelte';
 
   let { children }: { children: Snippet } = $props();
 
   let ready = $state(false);
   let splashMessage = $state('Apro i tuoi bucket…');
-  let version = $state(__APP_VERSION__);
 
   onMount(async () => {
     try {
-      const res = await fetch('/api/status');
-      const status = await res.json();
-      version = status.version;
+      await loadSession();
       ready = true;
     } catch {
       splashMessage = navigator.onLine ? 'Il server non risponde.' : 'Sei offline.';
     }
   });
+
+  // Pages that work without signing in.
+  const PUBLIC = ['/login', '/setup', '/register', '/reset'];
+  const isPublic = $derived(PUBLIC.includes(page.url.pathname));
+
+  // First start goes to setup; a signed-out person goes to login; a signed-in one leaves the public pages.
+  $effect(() => {
+    if (!ready) return;
+    const path = page.url.pathname;
+    if (app.status?.setupRequired) {
+      if (path !== '/setup') void goto('/setup', { replaceState: true });
+    } else if (!app.user && !isPublic) {
+      void goto(`/login?next=${encodeURIComponent(path)}`, { replaceState: true });
+    } else if (app.user && isPublic) {
+      void goto(page.url.searchParams.get('next') || '/', { replaceState: true });
+    }
+  });
+
+  const allowed = $derived(ready && (isPublic ? !app.user : !!app.user));
 
   const tabs = [
     { href: '/', label: 'Bucket', icon: 'bucket' },
@@ -58,8 +75,9 @@
   });
 </script>
 
-{#if ready}
+{#if allowed}
   {@render children()}
+  {#if app.user}
   <nav class="tabbar" aria-label="Navigazione principale">
     {#each tabs as tab (tab.href)}
       <a href={tab.href} aria-current={activeTab === tab.href ? 'page' : undefined}>
@@ -68,8 +86,9 @@
       </a>
     {/each}
   </nav>
-{:else}
-  <Splash message={splashMessage} {version} />
+  {/if}
+{:else if !ready}
+  <Splash message={splashMessage} version={app.status?.version ?? __APP_VERSION__} />
 {/if}
 
 <style>

@@ -65,8 +65,8 @@ percentuali, l'app lo segnala e lascia la differenza "da assegnare" negativa: no
 Solo le entrate con il flag **base budget** contano per le percentuali (lo stipendio sì; un rimborso, un
 giroconto o una vendita usata no). Il flag si imposta sull'entrata o tramite una regola.
 
-**Da decidere**: le percentuali si calcolano sulle entrate del **mese in corso** o del **mese precedente**
-(più stabile se lo stipendio arriva a fine mese). Proposta: impostazione per utente, predefinito "mese precedente".
+Le percentuali si calcolano sulle entrate del **mese precedente** (predefinito, più stabile se lo stipendio
+arriva a fine mese) o del **mese in corso**: è un'impostazione del profilo.
 
 ### 4.4 Fine periodo
 
@@ -81,7 +81,9 @@ E una **politica per lo sforamento**:
 - **Riporta in negativo** al periodo successivo (predefinita).
 - **Copri da** un bucket scelto.
 
-La chiusura del periodo crea movimenti interni di tipo `rollover`, visibili e annullabili.
+La chiusura del periodo crea movimenti interni di tipo `rollover` nel mese successivo, visibili e annullabili
+(si può riaprire un mese finché il successivo è aperto). La parte di residuo che una regola "Sposta" non sposta
+torna da assegnare.
 
 ### 4.5 Saldo come somma di movimenti
 
@@ -221,7 +223,7 @@ SQLite (better-sqlite3 + Drizzle), migrazioni SQL numerate come in Mealler. Impo
 | `sessions`, `invites`, `password_resets` | come Mealler |
 | `accounts` | utente, nome, tipo (`checking`, `card`, `paypal`, `cash`), conto di addebito (per le carte) |
 | `buckets` | utente, nome, categoria (o personalizzata: lettera + colore), tipo, regola di riempimento, obiettivo, politiche di fine periodo, ordine, archiviato |
-| `periods` | utente, mese, stato (`open`, `closed`) |
+| `periods` | utente, mese, stato (`open`, `closed`), quando e su quale entrata è stato assegnato |
 | `captures` | spese in coda: utente, importo, data/ora, conto facoltativo, nota, stato (`queued`, `matched`, `cash`, `discarded`), id client per la sync offline |
 | `import_batches` | utente, fonte (`csv`, `api`, `email`), profilo, hash file, righe lette/nuove/saltate, annullato |
 | `transactions` | movimento: utente, conto, lotto, data operazione, data valuta, importo, descrizione originale e pulita, id esterno, impronta, tipo (`expense`, `income`, `transfer`), flag base budget, stato (`pending`, `reviewed`) |
@@ -312,7 +314,8 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
 
 ## 11. Roadmap
 
-1. **Fondamenta**: scheletro, utenti e accesso, conti, bucket e periodi, registro dei movimenti di budget.
+1. **Fondamenta** ✅: scheletro, utenti e accesso, conti, bucket e periodi, registro dei movimenti di budget,
+   entrate inserite a mano. Gli spostamenti tra bucket esistono nell'API, l'interfaccia arriva con la fase 2.
 2. **Uso quotidiano**: cattura con coda offline, home dei bucket, chiusura del periodo.
 3. **Sessione**: import CSV con profili, doppioni, abbinamento, regole, revisione, lotti annullabili.
 4. **Promemoria**: badge e push.
