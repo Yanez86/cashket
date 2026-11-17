@@ -119,3 +119,65 @@ export interface BudgetView {
   /** Expenses waiting in the queue: not in the buckets yet, shown so the month does not look richer than it is. */
   queue: QueueSummary;
 }
+
+export interface ImportProfile {
+  id: number;
+  accountId: number;
+  name: string;
+  headerFingerprint: string | null;
+  mapping: import('./csv.ts').ImportMapping;
+}
+
+export interface ImportBatch {
+  id: number;
+  accountId: number | null;
+  source: 'csv' | 'api' | 'email';
+  fileName: string | null;
+  rowsRead: number;
+  rowsNew: number;
+  rowsSkipped: number;
+  undone: boolean;
+  createdAt: string;
+}
+
+/** A bank line (or a cash expense) in the session, with what has been decided for it so far. */
+export interface SessionLine {
+  id: number;
+  accountId: number;
+  date: string;
+  amountCents: number;
+  description: string;
+  descriptionRaw: string;
+  kind: 'expense' | 'income' | 'transfer';
+  budgetBase: boolean;
+  bucketId: number | null;
+  /** Who chose the bucket: the person, a rule, or nobody yet. */
+  assignedBy: 'user' | 'rule' | null;
+  /** A rule used once or twice so far: worth a look. */
+  newRule: boolean;
+  /** Bucket a rule would propose, when none is chosen yet. */
+  suggestedBucketId: number | null;
+  /** The queued expense matched to this line, if any. */
+  capture: { id: number; note: string | null; amountCents: number; matchedBy: 'auto' | 'user'; score: number } | null;
+  transferKind: 'card_settlement' | 'withdrawal' | 'paypal_funding' | 'other' | null;
+  fromCash: boolean;
+}
+
+export interface SessionProposal {
+  capture: Capture;
+  lineId: number;
+  score: number;
+}
+
+export interface SessionView {
+  lines: SessionLine[];
+  /** Pairings to confirm with a tap. */
+  ask: SessionProposal[];
+  /** Queued expenses with no bank line yet; stale ones are older than the person's window. */
+  unmatched: (Capture & { stale: boolean })[];
+  batches: ImportBatch[];
+  /** What the session takes from (or gives back to) each bucket. */
+  effect: { bucketId: number; cents: number }[];
+  /** Lines that still need a decision before the session can be closed. */
+  open: number;
+}

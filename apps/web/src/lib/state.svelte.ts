@@ -51,6 +51,9 @@ const MESSAGES: Record<string, string> = {
   unreachable: 'Il server non risponde.',
   offline: 'Sei offline: non è stato salvato.',
   unauthorized: 'Accedi di nuovo.',
+  batchReviewed: 'Questo import è già stato chiuso in una sessione: non si può più annullare.',
+  lineMatched: 'Questa riga è già abbinata a una spesa.',
+  unassigned: 'Ci sono ancora righe senza bucket.',
   captureDone: 'Questa spesa è già stata sistemata in una sessione.',
   storageFull: 'Il telefono non ha spazio per tenere la spesa: riprova con la rete.'
 };

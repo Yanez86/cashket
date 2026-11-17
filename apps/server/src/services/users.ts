@@ -14,6 +14,7 @@ export interface UserRow {
   percent_base: User['percentBase'];
   active: number;
   last_session_at: string | null;
+  unmatched_after_days: number;
 }
 
 export const toUser = (r: UserRow): User => ({

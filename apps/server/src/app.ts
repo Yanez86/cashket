@@ -12,6 +12,7 @@ import { errorHandler, forbidden } from './http.ts';
 import { authRoutes } from './routes/auth.ts';
 import { adminRoutes } from './routes/admin.ts';
 import { moneyRoutes } from './routes/money.ts';
+import { sessionRoutes } from './routes/session.ts';
 import { PERMISSIONS_POLICY, contentSecurityPolicy } from './security.ts';
 
 export interface AppContext {
@@ -57,6 +58,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       await api.register(async (scope) => authRoutes(scope, ctx));
       await api.register(async (scope) => adminRoutes(scope, ctx), { prefix: '/admin' });
       await api.register(async (scope) => moneyRoutes(scope, ctx));
+      await api.register(async (scope) => sessionRoutes(scope, ctx));
     },
     { prefix: '/api' }
   );

@@ -84,6 +84,21 @@ test('setup, invite, budget', async () => {
   assert.equal((await admin('POST', '/api/captures', capture)).json().id, first.id);
   assert.deepEqual((await admin('GET', '/api/captures/summary')).json(), { count: 1, totalCents: 1250 });
 
+  // A session: import a line, the queued lunch is paired, booked and closed.
+  const imported = await admin('POST', '/api/imports', {
+    accountId: conto.id,
+    fileName: 'bpm.csv',
+    fileSha256: null,
+    rows: [{ date: '2026-11-17', valueDate: null, amountCents: -1250, description: 'RISTORANTE DA LUIGI', externalId: null }],
+    profile: null
+  });
+  assert.equal(imported.json().rowsNew, 1);
+  const session = (await admin('POST', '/api/session/prepare')).json();
+  assert.equal(session.lines[0].capture.id, first.id);
+  await admin('POST', `/api/session/lines/${session.lines[0].id}/assign`, { bucketId: spesa.id, remember: true });
+  assert.equal((await admin('POST', '/api/session/close')).statusCode, 200);
+  assert.ok((await admin('GET', '/api/me')).json().lastSessionAt);
+
   // Bea sees none of it.
   assert.equal((await bea('GET', '/api/captures')).json().length, 0);
   assert.equal((await bea('GET', `/api/buckets/${spesa.id}`)).statusCode, 404);

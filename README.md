@@ -8,9 +8,9 @@ abbina le spese ai movimenti della banca e tu le assegni ai bucket.
 
 ## Stato
 
-**Fase 2 di 6.** Si può entrare, invitare la famiglia, creare conti e bucket, registrare le entrate,
-riempire i bucket del mese, spostare soldi tra bucket e chiudere il mese. Le spese si mettono in coda in due
-tocchi, anche offline; per assegnarle ai bucket serve la sessione, che arriva con la fase 3.
+**Fase 3 di 6.** Il ciclo completo funziona: spese in coda durante la giornata (anche offline), poi la
+sessione: import del CSV della banca, abbinamento con la coda, assegnazione ai bucket con regole che imparano,
+revisione e chiusura. Mancano promemoria, import automatico e grafici.
 
 - Specifica completa: **[docs/SPEC.md](docs/SPEC.md)**
 - Stack e struttura: gli stessi di [Mealler](https://github.com/Yanez86/mealler)
@@ -21,7 +21,7 @@ tocchi, anche offline; per assegnarle ai bucket serve la sessione, che arriva co
 | Utenti, inviti, accesso, link per la nuova password | ✅ |
 | Conti, bucket fissi / a percentuale / resto, entrate, assegnazione e chiusura del mese | ✅ |
 | Cattura rapida con coda offline, spostamenti tra bucket | ✅ |
-| Sessione: import CSV, abbinamento, regole, revisione | ⏳ |
+| Sessione: import CSV, abbinamento, regole, revisione | ✅ |
 | Promemoria (badge e push) | ⏳ |
 | Import automatico (open banking Enable Banking) | ⏳ |
 | Andamento | ⏳ |

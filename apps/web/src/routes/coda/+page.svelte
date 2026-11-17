@@ -67,7 +67,6 @@
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if !queue.online}<p class="notice">Sei offline: le spese nuove restano sul telefono e partono appena torna la rete.</p>{/if}
 
-    {#if rows.length}
       <section class="card">
         <div class="session">
           <SectionIcon section="session" size={48} />
@@ -76,10 +75,8 @@
             <p class="muted small">{since}</p>
           </div>
         </div>
-        <button class="btn btn-primary btn-block" type="button" disabled style="margin-top: 14px"><Icon name="upload" />Avvia sessione</button>
-        <p class="help" style="margin-top: 8px">Import dell'estratto e abbinamento arrivano con la prossima versione.</p>
+        <a class="btn btn-primary btn-block" href="/sessione" style="margin-top: 14px"><Icon name="upload" />Avvia sessione</a>
       </section>
-    {/if}
 
     {#each days as [key, list] (key)}
       <section class="card day">

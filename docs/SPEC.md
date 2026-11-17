@@ -143,8 +143,9 @@ della banca**; bucket e nota restano quelli dell'utente.
 | Stesso conto o carta indicato in cattura | alto |
 | Nota simile alla descrizione (es. "pranzo" ↔ ristorante) | basso |
 
-- **Alta confidenza** → abbinata in automatico, segnalata nel passo Controlla.
-- **Media** → in "Da verificare".
+- **Alta confidenza** (≥ 80, senza un'altra candidata entro 10 punti) → abbinata in automatico, segnalata
+  nel passo Controlla.
+- **Media** (≥ 45, o una sicura con una rivale vicina, come due caffè uguali) → in "Da verificare".
 - **Bassa** → nessun abbinamento proposto.
 
 Un movimento bancario si abbina a **una sola** spesa in coda e viceversa.
@@ -319,7 +320,10 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
 2. **Uso quotidiano** ✅: cattura con tastierino e coda offline (service worker, invio con `clientId`),
    pagina Coda con modifica ed eliminazione, badge sulla tab, stima della coda nella home, spostamenti tra
    bucket, chiusura del periodo.
-3. **Sessione**: import CSV con profili, doppioni, abbinamento, regole, revisione, lotti annullabili.
+3. **Sessione** ✅: import CSV con mappatura delle colonne salvata e riconosciuta dalle intestazioni,
+   doppioni, giroconti (addebito carta, prelievi, PayPal), contanti, abbinamento con punteggio, regole che
+   imparano, revisione, lotti annullabili. Excel, OFX e CAMT.053 non ancora: per ora si salva come CSV.
+   Profili pronti per YouWeb e Nexi quando ci saranno i file di esempio.
 4. **Promemoria**: badge e push.
 5. **Import automatico**: Enable Banking, schermata Connessioni; poi email di notifica per PayPal.
 6. **Andamento**: grafici per bucket e per mese.

@@ -4,3 +4,6 @@ export * from './money.ts';
 export * from './categories.ts';
 export * from './budget.ts';
 export * from './api.ts';
+export * from './csv.ts';
+export * from './describe.ts';
+export * from './match.ts';
