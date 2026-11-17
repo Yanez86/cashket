@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: sport -->
+  <g transform="rotate(-30 32 32)"><rect x="14" y="29" width="36" height="6" rx="2" fill="#B9B6CC" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><rect x="3" y="23" width="6" height="18" rx="2.5" fill="#3F6FD8" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><rect x="8" y="17" width="9" height="30" rx="3" fill="#3F6FD8" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><rect x="55" y="23" width="6" height="18" rx="2.5" fill="#3F6FD8" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><rect x="47" y="17" width="9" height="30" rx="3" fill="#3F6FD8" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><path d="M12.5 22V30M51.5 22V30" stroke="#8FB0F0" stroke-width="2.4" stroke-linecap="round"></path></g>
+</svg>

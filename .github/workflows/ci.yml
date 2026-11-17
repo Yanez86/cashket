@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g pnpm@10
+      # Il lockfile non esiste ancora: va creato con il primo `pnpm install` e committato,
+      # poi questa riga torna `pnpm install --frozen-lockfile` come in Mealler.
+      - run: pnpm install
+      - name: Typecheck
+        run: pnpm -r --no-bail typecheck
+      - name: Test
+        if: ${{ !cancelled() }}
+        run: pnpm -r --no-bail test
+      - name: Build
+        if: ${{ !cancelled() }}
+        run: pnpm -r build
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t cashket:test .
+      - name: Smoke test
+        run: |
+          docker run -d --name cashket -p 3000:3000 cashket:test
+          for i in $(seq 1 30); do curl -fsS http://localhost:3000/healthz && break; sleep 2; done
+          curl -fsS http://localhost:3000/api/status | tee /dev/stderr | grep -q '"name":"Cashket"'
+          curl -fsS http://localhost:3000/ | grep -q '<html'
+          curl -fsS http://localhost:3000/manifest.webmanifest | grep -q Cashket
+      - name: Container logs
+        if: always()
+        run: docker logs cashket || true

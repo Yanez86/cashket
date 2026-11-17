@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Cashket — avvio:  docker compose up -d --build
+services:
+  cashket:
+    build: .
+    container_name: cashket
+    restart: unless-stopped
+    ports:
+      # Dietro Cloudflare Tunnel metti CASHKET_BIND=127.0.0.1 nel file .env: la porta resta raggiungibile
+      # solo dal server stesso, e a Cashket si arriva solo passando dal tunnel (in HTTPS).
+      - "${CASHKET_BIND:-0.0.0.0}:${CASHKET_PORT:-3000}:3000"
+    environment:
+      TZ: ${TZ:-Europe/Rome}
+      CASHKET_BASE_URL: ${CASHKET_BASE_URL:-}
+      CASHKET_TRUST_PROXY: ${CASHKET_TRUST_PROXY:-}
+      CASHKET_SECRET_KEY: ${CASHKET_SECRET_KEY:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    # Il processo gira come utente senza privilegi e non ne può acquisire.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - cashket-data:/data
+
+volumes:
+  cashket-data:

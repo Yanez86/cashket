@@ -1,0 +1,9 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Cashket mark: a tilted bucket with an apricot rim and a gold euro coin in front (docs/SPEC.md §9.4). -->
+<script lang="ts">
+  let { size = 40, title = '' }: { size?: number; title?: string } = $props();
+</script>
+
+<svg width={size} height={size} viewBox="0 0 120 120" role={title ? 'img' : undefined} aria-label={title || undefined} aria-hidden={title ? undefined : 'true'}>
+  <g transform="rotate(-12 50 56)"><path d="M26 34C26 6 74 6 74 34" fill="none" stroke="#17151F" stroke-width="5" stroke-linecap="round"></path><path d="M14 38H86L78 90a9 9 0 0 1-9 8H31a9 9 0 0 1-9-8Z" fill="#FFFFFF"></path><path d="M17.5 60H82.5L80.5 74H19.5Z" fill="#FCE3D1"></path><path d="M14 38H86L78 90a9 9 0 0 1-9 8H31a9 9 0 0 1-9-8Z" fill="none" stroke="#17151F" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></path><rect x="9" y="28" width="82" height="15" rx="7.5" fill="#E2874A" stroke="#17151F" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></rect><ellipse cx="28" cy="33" rx="9" ry="2.4" fill="#F2B48A"></ellipse></g><g transform="translate(86 86) rotate(12)"><circle r="21" fill="#F5B83D" stroke="#17151F" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></circle><circle r="14" fill="none" stroke="#E2A12A" stroke-width="2.5"></circle><path d="M6 -9A10.5 10.5 0 1 0 6 9M-12 -3H3M-12 3H3" fill="none" stroke="#17151F" stroke-width="3.6" stroke-linecap="round"></path><ellipse cx="-9" cy="-11" rx="5" ry="2.8" fill="#FCD97A" transform="rotate(-35 -9 -11)"></ellipse></g>
+</svg>

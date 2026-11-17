@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: leisure -->
+  <g transform="rotate(-14 32 32)"><path d="M6 20H58V28a4 4 0 0 0 0 8V44H6V36a4 4 0 0 0 0-8Z" fill="#F27BA5" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M42 22V42" stroke="#17151F" stroke-width="2.4" stroke-dasharray="3 4" stroke-linecap="round"></path><path d="M24 23.5L26.6 29L32.5 29.6L28 33.4L29.4 39.2L24 36.2L18.6 39.2L20 33.4L15.5 29.6L21.4 29Z" fill="#FFFFFF" stroke="#17151F" stroke-width="2.4" stroke-linejoin="round"></path><ellipse cx="50" cy="26" rx="4" ry="1.6" fill="#F8B3CB"></ellipse></g>
+</svg>

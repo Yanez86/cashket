@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket account: cash -->
+  <rect x="10" y="12" width="46" height="28" rx="4" fill="#A8D89E" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-10 33 26)"></rect><rect x="6" y="22" width="48" height="28" rx="4" fill="#4E9E45" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><circle cx="30" cy="36" r="7" fill="#A8D89E" stroke="#17151F" stroke-width="2.4"></circle><path d="M11 27.5H17M43 44.5H49" stroke="#A8D89E" stroke-width="3" stroke-linecap="round"></path><circle cx="49" cy="49" r="9" fill="#F5B83D" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></circle><ellipse cx="46" cy="46" rx="3" ry="1.8" fill="#FCD97A" transform="rotate(-30 46 46)"></ellipse>
+</svg>

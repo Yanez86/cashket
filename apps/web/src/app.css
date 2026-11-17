@@ -1,0 +1,514 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Design tokens: Mealler's system with Cashket's palette "Albicocca e mare" (docs/SPEC.md §9.3),
+   light and dark themes, WCAG 2.2 AA contrast. */
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eeeef0;
+  --border: #e4e4e7;
+  --field: #85858d;
+  --nav: #ffffff;
+  --text: #18181b;
+  --text-2: #52525b;
+  --accent: #e2874a;
+  --on-accent: #2a1203;
+  --accent-soft: #fcebdf;
+  --accent-ink: #a9521f;
+  /* Bucket states: within budget, saving up, overspent. */
+  --ok: #4f9a6c;
+  --ok-ink: #2f6b47;
+  --under: #4a8db0;
+  --under-ink: #2b6280;
+  --over: #c95f86;
+  --over-ink: #9a3a5e;
+  --near: #c99a3e;
+  --near-ink: #8a6214;
+  --danger: #b4344f;
+  --on-danger: #ffffff;
+  --radius: 20px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Strength of the tinted circle behind category icons. */
+  --icon-tint: 16%;
+  /* Where content may start below the status bar (see Mealler's app.css for the iPhone details). */
+  --status-clear: calc(env(safe-area-inset-top) + min(30px, env(safe-area-inset-top)));
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    :root {
+      --status-clear: max(36px, calc(env(safe-area-inset-top) + min(30px, env(safe-area-inset-top))));
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #111214;
+    --surface: #1a1b1e;
+    --surface-2: #2a2c30;
+    --border: #2e3034;
+    --field: #74767c;
+    --nav: #16171a;
+    --text: #eeeef0;
+    --text-2: #adafb5;
+    --accent: #eda070;
+    --on-accent: #2a1203;
+    --accent-soft: #3a271b;
+    --accent-ink: #f4bf99;
+    --ok: #6fbf8e;
+    --ok-ink: #a3d9b8;
+    --under: #6aaed0;
+    --under-ink: #a3cde3;
+    --over: #e083a6;
+    --over-ink: #edb0c7;
+    --near: #e0b45e;
+    --near-ink: #ecd09a;
+    --danger: #e8798f;
+    --on-danger: #2a0a07;
+    --icon-tint: 26%;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #111214;
+  --surface: #1a1b1e;
+  --surface-2: #2a2c30;
+  --border: #2e3034;
+  --field: #74767c;
+  --nav: #16171a;
+  --text: #eeeef0;
+  --text-2: #adafb5;
+  --accent: #eda070;
+  --on-accent: #2a1203;
+  --accent-soft: #3a271b;
+  --accent-ink: #f4bf99;
+  --ok: #6fbf8e;
+  --ok-ink: #a3d9b8;
+  --under: #6aaed0;
+  --under-ink: #a3cde3;
+  --over: #e083a6;
+  --over-ink: #edb0c7;
+  --near: #e0b45e;
+  --near-ink: #ecd09a;
+  --danger: #e8798f;
+  --on-danger: #2a0a07;
+  --icon-tint: 26%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 16px 120px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.small {
+  font-size: 14px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Buttons: every target is at least 44 px, primary actions 48–52 px. */
+.btn {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 24px;
+  border: 1px solid var(--field);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-ink);
+}
+
+.btn-danger {
+  border-color: var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn-block {
+  width: 100%;
+  min-height: 52px;
+  font-size: 17px;
+  border-radius: 26px;
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: 24px;
+  background: var(--surface);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-btn.plain {
+  background: transparent;
+  color: var(--accent-ink);
+}
+
+/* Forms: 16 px text avoids zoom on iOS; borders keep 3:1 contrast. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field > label,
+.label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.input,
+.field input:not([type='checkbox']):not([type='radio']),
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--field);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+/* iOS Safari gives date/time inputs an intrinsic min-width that overflows narrow screens. */
+input[type='date'],
+input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
+}
+
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+.field,
+.field > * {
+  min-width: 0;
+}
+
+.help {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.error {
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.notice {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 15px;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.chip {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  border: 1px solid var(--field);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  /* Bars fill up when they appear and glide to every new value (see $lib/fill.ts). */
+  transition:
+    width 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 500ms ease;
+}
+
+.bar > span.status-ok {
+  background: var(--ok);
+}
+.bar > span.status-under,
+.bar > span.status-saving {
+  background: var(--under);
+}
+.bar > span.status-over {
+  background: var(--over);
+}
+.bar > span.status-none {
+  background: var(--text-2);
+}
+.status-ink-ok {
+  color: var(--ok-ink);
+}
+.status-ink-under,
+.status-ink-saving {
+  color: var(--under-ink);
+}
+.status-ink-over {
+  color: var(--over-ink);
+}
+.status-ink-none {
+  color: var(--text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar > span {
+    transition: none;
+  }
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.list-row:first-child {
+  border-top: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Page transitions (View Transitions API, started in +layout.svelte) ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-group(tab-pill) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Into a deeper page (a meal, a setting): it comes in from the right over the page below. */
+:root[data-nav='forward']::view-transition-old(root) {
+  animation-name: page-back-out;
+}
+:root[data-nav='forward']::view-transition-new(root) {
+  animation-name: page-in-right;
+}
+/* Back: the page leaves to the right and uncovers the one below. */
+:root[data-nav='back']::view-transition-old(root) {
+  z-index: 1;
+  animation-name: page-out-right;
+}
+:root[data-nav='back']::view-transition-new(root) {
+  animation-name: page-back-in;
+}
+/* Between tabs: a short slide towards the side of the new tab. */
+:root[data-nav='next']::view-transition-old(root) {
+  animation-name: tab-out-left;
+}
+:root[data-nav='next']::view-transition-new(root) {
+  animation-name: tab-in-right;
+}
+:root[data-nav='prev']::view-transition-old(root) {
+  animation-name: tab-out-right;
+}
+:root[data-nav='prev']::view-transition-new(root) {
+  animation-name: tab-in-left;
+}
+@keyframes page-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes page-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes page-back-out {
+  to {
+    transform: translateX(-25%);
+    opacity: 0.6;
+  }
+}
+@keyframes page-back-in {
+  from {
+    transform: translateX(-25%);
+    opacity: 0.6;
+  }
+}
+@keyframes tab-in-right {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+@keyframes tab-out-left {
+  to {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+}
+@keyframes tab-in-left {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+}
+@keyframes tab-out-right {
+  to {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

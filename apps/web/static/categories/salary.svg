@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: salary -->
+  <rect x="16" y="6" width="32" height="26" rx="3" fill="#4E9E45" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(8 32 19)"></rect><circle cx="32" cy="18" r="5" fill="#A8D89E" stroke="#17151F" stroke-width="2.2"></circle><path d="M8 26H56V54a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4Z" fill="#FFFFFF" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M8 26L32 44L56 26" fill="#EEECF5" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><circle cx="48" cy="50" r="9" fill="#F5B83D" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></circle><path d="M48 54V46M44.5 49L48 45.5L51.5 49" fill="none" stroke="#17151F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>

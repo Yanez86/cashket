@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: groceries -->
+  <path d="M22 24C19 12 25 5 30 6C35 7 34 16 30 24Z" fill="#D18B47" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><ellipse cx="27" cy="12" rx="1.6" ry="3.6" fill="#EDB878" transform="rotate(10 27 12)"></ellipse><path d="M34 24C33 15 39 9 47 10C46 18 41 23 34 24Z" fill="#7CC36E" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M22 26V22a10 10 0 0 1 20 0v4" fill="none" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M12 26H52L48 55a5 5 0 0 1-5 4H21a5 5 0 0 1-5-4Z" fill="#4E9E45" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M14.5 35H49.5" stroke="#A8D89E" stroke-width="4"></path><ellipse cx="21" cy="44" rx="2" ry="5" fill="#7CC36E"></ellipse>
+</svg>

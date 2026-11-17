@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: health -->
+  <g transform="rotate(-40 32 32)"><path d="M32 21H22a11 11 0 0 0 0 22H32Z" fill="#E04F3F" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M32 21H42a11 11 0 0 1 0 22H32Z" fill="#FFFFFF" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><ellipse cx="21" cy="27" rx="4" ry="1.6" fill="#F28B7D"></ellipse></g>
+</svg>

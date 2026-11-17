@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: savings -->
+  <circle cx="33" cy="9" r="6" fill="#F5B83D" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></circle><path d="M19 22L18 12L27 17Z" fill="#F29BB5" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M10 33c-4 0-6-4-3-6" fill="none" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M12 34C12 23 21 17 33 17C45 17 53 24 53 34C53 42 48 47 44 49V56H38V51H28V56H22V49C16 46 12 41 12 34Z" fill="#F29BB5" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M52 28h2a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4h-2" fill="#F7B9CB" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><circle cx="42" cy="28" r="2.4" fill="#17151F"></circle><path d="M27 21H38" stroke="#17151F" stroke-width="3" stroke-linecap="round"></path><ellipse cx="22" cy="31" rx="2.4" ry="5" fill="#F8C3D3" transform="rotate(20 22 31)"></ellipse>
+</svg>

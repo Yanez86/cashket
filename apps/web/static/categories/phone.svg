@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: phone -->
+  <g transform="rotate(-10 32 32)"><rect x="17" y="5" width="30" height="54" rx="7" fill="#38A3D1" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></rect><rect x="21" y="12" width="22" height="36" rx="2.5" fill="#FFFFFF"></rect><path d="M25 27a10 10 0 0 1 14 0M28 31a5.5 5.5 0 0 1 8 0" fill="none" stroke="#38A3D1" stroke-width="2.6" stroke-linecap="round"></path><circle cx="32" cy="35" r="1.8" fill="#38A3D1"></circle><circle cx="32" cy="53.5" r="2" fill="#17151F"></circle><path d="M28 8.5H36" stroke="#9AD3EA" stroke-width="2" stroke-linecap="round"></path></g>
+</svg>

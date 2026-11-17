@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: clothing -->
+  <path d="M22 8L7 16L12 29L18 27V56H46V27L52 29L57 16L42 8C40 13 36 15 32 15S24 13 22 8Z" fill="#D6457A" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M18.5 39H45.5" stroke="#F08AAE" stroke-width="5"></path><path d="M22 8C24 13 28 15 32 15S40 13 42 8" fill="none" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><ellipse cx="23" cy="47" rx="1.8" ry="4" fill="#F08AAE"></ellipse>
+</svg>

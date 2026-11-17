@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+  <!-- Cashket category: fuel -->
+  <path d="M40 19h4a4 4 0 0 1 4 4v19a3.5 3.5 0 0 0 7 0V21l-6-7" fill="none" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M10 56V14a6 6 0 0 1 6-6h18a6 6 0 0 1 6 6v42Z" fill="#7FB236" stroke="#17151F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><rect x="15" y="13" width="20" height="12" rx="2" fill="#FFFFFF" stroke="#17151F" stroke-width="2.4"></rect><path d="M25 31C25 31 19.5 38 19.5 41.5a5.5 5.5 0 0 0 11 0C30.5 38 25 31 25 31Z" fill="#F5B83D" stroke="#17151F" stroke-width="2.4" stroke-linejoin="round"></path><rect x="6" y="54" width="38" height="5" rx="2.5" fill="#17151F"></rect><ellipse cx="14" cy="34" rx="1.6" ry="5" fill="#B5DB7A"></ellipse>
+</svg>
