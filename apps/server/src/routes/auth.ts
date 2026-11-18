@@ -114,7 +114,15 @@ export async function authRoutes(app: FastifyInstance, { sqlite: db, config }: A
   app.patch('/me', async (request) => {
     const user = requireUser(request);
     const body = z
-      .object({ name: zName, locale: zLocale, timezone: zTimezone, theme: zTheme, percentBase: z.enum(['current', 'previous']) })
+      .object({
+        name: zName,
+        locale: zLocale,
+        timezone: zTimezone,
+        theme: zTheme,
+        percentBase: z.enum(['current', 'previous']),
+        sessionReminderDays: z.number().int().min(1).max(60).nullable(),
+        reminderHour: z.number().int().min(0).max(23)
+      })
       .partial()
       .parse(request.body);
     return toUser(updateProfile(db, user.id, body));

@@ -54,6 +54,7 @@ const MESSAGES: Record<string, string> = {
   batchReviewed: 'Questo import è già stato chiuso in una sessione: non si può più annullare.',
   lineMatched: 'Questa riga è già abbinata a una spesa.',
   unassigned: 'Ci sono ancora righe senza bucket.',
+  pushOff: 'Le notifiche non sono attive sul server.',
   captureDone: 'Questa spesa è già stata sistemata in una sessione.',
   storageFull: 'Il telefono non ha spazio per tenere la spesa: riprova con la rete.'
 };

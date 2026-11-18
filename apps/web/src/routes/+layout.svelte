@@ -9,6 +9,7 @@
   import Splash from '$lib/Splash.svelte';
   import { app, loadSession } from '$lib/state.svelte';
   import { flushQueue, initOffline, queue, refreshQueue } from '$lib/offline.svelte';
+  import { refreshSubscription } from '$lib/push';
 
   let { children }: { children: Snippet } = $props();
 
@@ -36,6 +37,7 @@
     if (!ready || userId == null) return;
     initOffline(userId);
     void flushQueue().then(refreshQueue);
+    void refreshSubscription();
   });
 
   const badge = $derived(queue.count + queue.pending.length);

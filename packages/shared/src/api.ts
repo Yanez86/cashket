@@ -22,6 +22,10 @@ export interface User {
   percentBase: 'current' | 'previous';
   /** When the last reconciliation session was closed; null before the first. */
   lastSessionAt: string | null;
+  /** Remind to do a session when the last one is this many days old (null = no reminder). */
+  sessionReminderDays: number | null;
+  /** From which local hour the reminder may arrive. */
+  reminderHour: number;
 }
 
 export interface Invite {

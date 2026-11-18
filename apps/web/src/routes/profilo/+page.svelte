@@ -6,6 +6,8 @@
   import { app, errorMessage, setUser } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
   import { clearApiCache } from '$lib/offline.svelte';
+  import { pushSupport, subscribe, unsubscribe, currentSubscription } from '$lib/push';
+  import { onMount } from 'svelte';
   import Icon from '$lib/Icon.svelte';
 
   let error = $state('');
@@ -21,6 +23,47 @@
       setUser(await patch<User>('/me', change));
     } catch (e) {
       error = errorMessage(e);
+    }
+  }
+
+  const REMINDERS: [number | null, string][] = [
+    [null, 'Mai'],
+    [3, 'Ogni 3 giorni'],
+    [7, 'Ogni settimana'],
+    [14, 'Ogni 2 settimane']
+  ];
+  let support = $state<ReturnType<typeof pushSupport>>('unsupported');
+  let pushOn = $state(false);
+  let pushMessage = $state('');
+
+  onMount(async () => {
+    support = pushSupport();
+    if (support === 'ok') pushOn = Notification.permission === 'granted' && !!(await currentSubscription().catch(() => null));
+  });
+
+  async function togglePush() {
+    pushMessage = '';
+    try {
+      if (pushOn) {
+        await unsubscribe();
+        pushOn = false;
+      } else {
+        const permission = await subscribe();
+        pushOn = permission === 'granted';
+        if (!pushOn) pushMessage = 'Permesso negato: abilita le notifiche per Cashket nelle impostazioni del telefono.';
+      }
+    } catch (e) {
+      pushMessage = errorMessage(e);
+    }
+  }
+
+  async function testPush() {
+    pushMessage = '';
+    try {
+      const { delivered } = await post<{ delivered: number }>('/push/test');
+      pushMessage = delivered ? 'Notifica inviata.' : 'Nessun dispositivo ha ricevuto la notifica.';
+    } catch (e) {
+      pushMessage = errorMessage(e);
     }
   }
 
@@ -76,12 +119,51 @@
       {#if error}<p class="error" role="alert">{error}</p>{/if}
     </section>
 
+    <section class="card stack">
+      <h2 class="section-title">Promemoria della sessione</h2>
+      <div class="field">
+        <span class="label" id="reminder">Ricordami di fare una sessione</span>
+        <div class="chips" role="group" aria-labelledby="reminder">
+          {#each REMINDERS as [days, label] (label)}
+            <button class="chip" type="button" aria-pressed={app.user?.sessionReminderDays === days} onclick={() => save({ sessionReminderDays: days })}>{label}</button>
+          {/each}
+        </div>
+        <p class="help">Solo quando ci sono spese in coda. Il numero sull'icona dell'app mostra sempre quante sono.</p>
+      </div>
+      {#if app.user?.sessionReminderDays}
+        <div class="field">
+          <label for="hour">Dalle ore</label>
+          <select id="hour" value={app.user.reminderHour} onchange={(e) => save({ reminderHour: Number(e.currentTarget.value) })}>
+            {#each Array.from({ length: 24 }, (_, h) => h) as h (h)}<option value={h}>{String(h).padStart(2, '0')}:00</option>{/each}
+          </select>
+        </div>
+        {#if support === 'ok'}
+          <div class="row">
+            <button class="btn" type="button" onclick={togglePush}>{pushOn ? 'Disattiva le notifiche su questo telefono' : 'Attiva le notifiche su questo telefono'}</button>
+            {#if pushOn}<button class="btn btn-ghost" type="button" onclick={testPush}>Prova</button>{/if}
+          </div>
+        {:else if support === 'ios-not-installed'}
+          <p class="help">Su iPhone le notifiche arrivano solo con Cashket aggiunto alla schermata Home: Condividi › Aggiungi a Home, poi aprilo da lì.</p>
+        {:else if support === 'insecure'}
+          <p class="help">Le notifiche servono un indirizzo https://, per esempio quello del tunnel Cloudflare.</p>
+        {:else}
+          <p class="help">Questo browser non supporta le notifiche.</p>
+        {/if}
+        {#if pushMessage}<p class="notice" role="status">{pushMessage}</p>{/if}
+      {/if}
+    </section>
+
     <button class="btn btn-danger btn-block" type="button" onclick={logout}>Esci</button>
     <p class="muted small" style="text-align: center">Cashket v{app.status?.version}</p>
   </div>
 </main>
 
 <style>
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
   .link {
     color: inherit;
     text-decoration: none;

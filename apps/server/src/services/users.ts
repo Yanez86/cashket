@@ -15,6 +15,8 @@ export interface UserRow {
   active: number;
   last_session_at: string | null;
   unmatched_after_days: number;
+  session_reminder_days: number | null;
+  reminder_hour: number;
 }
 
 export const toUser = (r: UserRow): User => ({
@@ -27,7 +29,9 @@ export const toUser = (r: UserRow): User => ({
   timezone: r.timezone,
   theme: r.theme,
   percentBase: r.percent_base,
-  lastSessionAt: r.last_session_at
+  lastSessionAt: r.last_session_at,
+  sessionReminderDays: r.session_reminder_days,
+  reminderHour: r.reminder_hour
 });
 
 export const countUsers = (db: Sqlite) => (db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n;
@@ -65,7 +69,15 @@ export function createUser(db: Sqlite, u: NewUser): UserRow {
   });
 }
 
-const PROFILE_COLUMNS = { name: 'name', locale: 'locale', timezone: 'timezone', theme: 'theme', percentBase: 'percent_base' } as const;
+const PROFILE_COLUMNS = {
+  name: 'name',
+  locale: 'locale',
+  timezone: 'timezone',
+  theme: 'theme',
+  percentBase: 'percent_base',
+  sessionReminderDays: 'session_reminder_days',
+  reminderHour: 'reminder_hour'
+} as const;
 
 export function updateProfile(db: Sqlite, id: number, patch: Partial<Pick<User, keyof typeof PROFILE_COLUMNS>>): UserRow {
   for (const [key, column] of Object.entries(PROFILE_COLUMNS)) {

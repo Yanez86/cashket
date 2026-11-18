@@ -324,6 +324,7 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
    doppioni, giroconti (addebito carta, prelievi, PayPal), contanti, abbinamento con punteggio, regole che
    imparano, revisione, lotti annullabili. Excel, OFX e CAMT.053 non ancora: per ora si salva come CSV.
    Profili pronti per YouWeb e Nexi quando ci saranno i file di esempio.
-4. **Promemoria**: badge e push.
+4. **Promemoria** ✅: numero sull'icona dell'app e sulla tab Coda; notifica push una volta al giorno, dall'ora
+   scelta, quando ci sono spese in coda e l'ultima sessione è più vecchia dell'intervallo scelto.
 5. **Import automatico**: Enable Banking, schermata Connessioni; poi email di notifica per PayPal.
 6. **Andamento**: grafici per bucket e per mese.

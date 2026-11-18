@@ -58,6 +58,10 @@ export async function refreshQueue() {
     const s = await get<QueueSummary>('/captures/summary');
     queue.count = s.count;
     queue.totalCents = s.totalCents;
+    // The number on the app's icon, where the phone supports it (installed PWA).
+    const nav = navigator as Navigator & { setAppBadge?: (n: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
+    if (s.count) await nav.setAppBadge?.(s.count).catch(() => {});
+    else await nav.clearAppBadge?.().catch(() => {});
   } catch {
     // Offline: keep the last known numbers.
   }

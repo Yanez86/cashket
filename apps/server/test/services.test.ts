@@ -165,3 +165,22 @@ test('captures: queue, idempotent client id, edit, delete, summary in the month'
   db.prepare("UPDATE captures SET status = 'matched' WHERE id = ?").run(pranzo.id);
   assert.equal(code(() => deleteCapture(db, user.id, pranzo.id)), 'captureDone');
 });
+
+test('reminders: on, something to do, old session, right hour, once a day', async () => {
+  const { dueReminders, markReminded, reminderText } = await import('../src/services/reminders.ts');
+  const { createCapture } = await import('../src/services/captures.ts');
+  const { db, user } = person();
+  const evening = new Date('2026-11-17T18:30:00Z'); // 19:30 in Rome
+  createCapture(db, user.id, { amountCents: 140, spentAt: '2026-11-17T07:00:00Z', accountId: null, note: null });
+  assert.equal(dueReminders(db, evening).length, 0); // reminder off
+  updateProfile(db, user.id, { sessionReminderDays: 7, reminderHour: 19 });
+  assert.equal(dueReminders(db, new Date('2026-11-17T16:00:00Z')).length, 0); // 17:00, too early
+  const [due] = dueReminders(db, evening);
+  assert.equal(due.localDay, '2026-11-17');
+  assert.equal(reminderText(due), '1 spesa in coda · nessuna sessione ancora');
+  markReminded(db, user.id, due.localDay);
+  assert.equal(dueReminders(db, evening).length, 0); // once a day
+  db.prepare('UPDATE users SET last_session_at = ?, last_reminded_on = NULL WHERE id = ?').run('2026-11-14T10:00:00Z', user.id);
+  assert.equal(dueReminders(db, evening).length, 0); // session 3 days ago
+  assert.equal(dueReminders(db, new Date('2026-11-22T18:30:00Z')).length, 1);
+});
