@@ -9,6 +9,7 @@
   import TopBar from '$lib/TopBar.svelte';
   import CategoryIcon from '$lib/CategoryIcon.svelte';
   import MoneyField from '$lib/MoneyField.svelte';
+  import Picker from '$lib/Picker.svelte';
 
   const isNew = page.params.id === 'nuovo';
   const id = isNew ? null : Number(page.params.id);
@@ -69,6 +70,7 @@
       .catch((e) => (error = errorMessage(e)));
   });
 
+  const targetOptions = $derived(others.map((o) => ({ value: o.id as number | null, label: o.name, icon: o.icon })));
   const remainderTaken = $derived(others.some((o) => o.fill.type === 'remainder'));
   const letter = $derived(name.trim().slice(0, 1).toUpperCase() || '?');
   const icon = $derived<BucketIcon>(
@@ -215,9 +217,7 @@
         {#if leftover === 'move'}
           <div class="field">
             <label for="leftover-to">Bucket</label>
-            <select id="leftover-to" bind:value={leftoverTo}>
-              {#each others as o (o.id)}<option value={o.id}>{o.name}</option>{/each}
-            </select>
+            <Picker id="leftover-to" label="Va nel bucket" options={targetOptions} bind:value={leftoverTo} />
           </div>
           <div class="field">
             <label for="leftover-percent">Quanto spostare (%)</label>
@@ -236,9 +236,7 @@
         {#if overspend === 'cover'}
           <div class="field">
             <label for="overspend-from">Bucket che copre</label>
-            <select id="overspend-from" bind:value={overspendFrom}>
-              {#each others as o (o.id)}<option value={o.id}>{o.name}</option>{/each}
-            </select>
+            <Picker id="overspend-from" label="Bucket che copre" options={targetOptions} bind:value={overspendFrom} />
           </div>
         {/if}
       </section>

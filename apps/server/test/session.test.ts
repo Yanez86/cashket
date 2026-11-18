@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { applyMapping, guessMapping, headerFingerprint, parseCsv, type BucketInput } from '@cashket/shared';
-import { memoryDb } from './sqlite.ts';
+import { memoryDb, seed } from './sqlite.ts';
 import { createUser, findUser, updateProfile } from '../src/services/users.ts';
 import { createAccount, listAccounts } from '../src/services/accounts.ts';
 import { createBucket, listBuckets } from '../src/services/buckets.ts';
@@ -44,6 +44,7 @@ const spend = (name: string): BucketInput => ({
 function setup() {
   const db = memoryDb();
   const created = createUser(db, { name: 'Anna', email: 'anna@casa.it', passwordHash: 'x', role: 'admin', timezone: 'Europe/Rome' });
+  seed(db, created.id);
   const user = updateProfile(db, created.id, { percentBase: 'current' });
   const bpm = createAccount(db, user.id, { name: 'Conto BPM', kind: 'checking', settlesToAccountId: null });
   createAccount(db, user.id, { name: 'Nexi', kind: 'card', settlesToAccountId: bpm.id });

@@ -17,6 +17,8 @@
   import { get, post } from '$lib/api';
   import { errorMessage } from '$lib/state.svelte';
   import Icon from '$lib/Icon.svelte';
+  import Picker from '$lib/Picker.svelte';
+  import { accountImg } from '$lib/accounts';
 
   let { accounts, batches = $bindable(), onnext }: { accounts: Account[]; batches: ImportBatch[]; onnext: () => void } = $props();
 
@@ -92,6 +94,7 @@
   const result = $derived(mapping && table.length ? applyMapping(table, mapping) : null);
   const header = $derived(mapping ? (table[mapping.headerRow] ?? []) : []);
   const columns = $derived(header.map((h, i) => ({ i, label: h || `Colonna ${i + 1}` })));
+  const colOptions = $derived(columns.map((c) => ({ value: c.i as number | null, label: c.label, sub: table[(mapping?.headerRow ?? 0) + 1]?.[c.i] ?? '' })));
 
   async function send() {
     if (!result?.rows.length || accountId == null || !mapping) return;
@@ -141,10 +144,14 @@
   {:else}
     <section class="card stack" style="gap: 12px">
       <div class="field">
-        <label for="account">Conto</label>
-        <select id="account" bind:value={accountId}>
-          {#each importable as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
-        </select>
+        <span class="label" id="account">Conto</span>
+        <div class="chips" role="group" aria-labelledby="account">
+          {#each importable as a (a.id)}
+            <button class="chip" type="button" aria-pressed={accountId === a.id} onclick={() => (accountId = a.id)}>
+              <img src={accountImg(a)} alt="" width="22" height="22" />{a.name}
+            </button>
+          {/each}
+        </div>
       </div>
       <div class="field">
         <label for="file">File CSV</label>
@@ -166,23 +173,24 @@
             </div>
             <div class="field">
               <label for="dateformat">Formato data</label>
-              <select id="dateformat" bind:value={mapping.dateFormat}>
-                <option value="dd/mm/yyyy">17/11/2026</option>
-                <option value="yyyy-mm-dd">2026-11-17</option>
-                <option value="mm/dd/yyyy">11/17/2026</option>
-              </select>
+              <Picker
+                id="dateformat"
+                label="Formato data"
+                options={[
+                  { value: 'dd/mm/yyyy', label: '17/11/2026' },
+                  { value: 'yyyy-mm-dd', label: '2026-11-17' },
+                  { value: 'mm/dd/yyyy', label: '11/17/2026' }
+                ]}
+                value={mapping.dateFormat as string | null}
+                onchange={(v) => mapping && v && (mapping.dateFormat = v as ImportMapping['dateFormat'])} />
             </div>
             <div class="field">
               <label for="datecol">Data</label>
-              <select id="datecol" bind:value={mapping.dateColumn}>
-                {#each columns as c (c.i)}<option value={c.i}>{c.label}</option>{/each}
-              </select>
+              <Picker id="datecol" label="Colonna della data" options={colOptions} value={mapping.dateColumn as number | null} onchange={(v) => mapping && v != null && (mapping.dateColumn = v)} />
             </div>
             <div class="field">
               <label for="desccol">Descrizione</label>
-              <select id="desccol" value={mapping.descriptionColumns[0]} onchange={(e) => mapping && (mapping.descriptionColumns = [Number(e.currentTarget.value), ...mapping.descriptionColumns.slice(1)])}>
-                {#each columns as c (c.i)}<option value={c.i}>{c.label}</option>{/each}
-              </select>
+              <Picker id="desccol" label="Colonna della descrizione" options={colOptions} value={mapping.descriptionColumns[0] as number | null} onchange={(v) => mapping && v != null && (mapping.descriptionColumns = [v, ...mapping.descriptionColumns.slice(1)])} />
             </div>
           </div>
           <div class="field">
@@ -196,9 +204,7 @@
             <div class="grid2">
               <div class="field">
                 <label for="amountcol">Colonna</label>
-                <select id="amountcol" bind:value={mapping.amount.column}>
-                  {#each columns as c (c.i)}<option value={c.i}>{c.label}</option>{/each}
-                </select>
+                <Picker id="amountcol" label="Colonna dell'importo" options={colOptions} value={mapping.amount.column as number | null} onchange={(v) => mapping && v != null && (mapping.amount.mode === 'single' && (mapping.amount.column = v))} />
               </div>
               <label class="check">
                 <input type="checkbox" bind:checked={mapping.amount.invert} />
@@ -209,15 +215,11 @@
             <div class="grid2">
               <div class="field">
                 <label for="debit">Dare (uscite)</label>
-                <select id="debit" bind:value={mapping.amount.debitColumn}>
-                  {#each columns as c (c.i)}<option value={c.i}>{c.label}</option>{/each}
-                </select>
+                <Picker id="debit" label="Colonna Dare" options={colOptions} value={mapping.amount.debitColumn as number | null} onchange={(v) => mapping && v != null && (mapping.amount.mode === 'split' && (mapping.amount.debitColumn = v))} />
               </div>
               <div class="field">
                 <label for="credit">Avere (entrate)</label>
-                <select id="credit" bind:value={mapping.amount.creditColumn}>
-                  {#each columns as c (c.i)}<option value={c.i}>{c.label}</option>{/each}
-                </select>
+                <Picker id="credit" label="Colonna Avere" options={colOptions} value={mapping.amount.creditColumn as number | null} onchange={(v) => mapping && v != null && (mapping.amount.mode === 'split' && (mapping.amount.creditColumn = v))} />
               </div>
             </div>
           {/if}

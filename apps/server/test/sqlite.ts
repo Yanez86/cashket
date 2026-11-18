@@ -33,3 +33,9 @@ export function memoryDb(): Sqlite {
   migrate(sqlite, migrationsDir);
   return sqlite;
 }
+
+/** A person as Cashket made them before the tutorial existed: a cash account and a "Risparmio" bucket. */
+export function seed(db: Sqlite, userId: number) {
+  db.prepare("INSERT INTO accounts (user_id, name, kind) VALUES (?, 'Contanti', 'cash')").run(userId);
+  db.prepare("INSERT INTO buckets (user_id, name, category, kind, fill_type, leftover) VALUES (?, 'Risparmio', 'savings', 'saving', 'remainder', 'carry')").run(userId);
+}

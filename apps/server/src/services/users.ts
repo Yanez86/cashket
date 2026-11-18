@@ -17,6 +17,7 @@ export interface UserRow {
   unmatched_after_days: number;
   session_reminder_days: number | null;
   reminder_hour: number;
+  onboarded_at: string | null;
 }
 
 export const toUser = (r: UserRow): User => ({
@@ -31,7 +32,8 @@ export const toUser = (r: UserRow): User => ({
   percentBase: r.percent_base,
   lastSessionAt: r.last_session_at,
   sessionReminderDays: r.session_reminder_days,
-  reminderHour: r.reminder_hour
+  reminderHour: r.reminder_hour,
+  onboarded: !!r.onboarded_at
 });
 
 export const countUsers = (db: Sqlite) => (db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n;
@@ -53,20 +55,14 @@ export interface NewUser {
   timezone?: string;
 }
 
-/** A new person starts with a cash account and a "Risparmio" bucket that takes what is left each month. */
+/** A new person starts empty: the welcome tutorial (services/onboarding.ts) creates accounts and buckets. */
 export function createUser(db: Sqlite, u: NewUser): UserRow {
-  return db.transaction(() => {
-    const id = insertedId(
-      db
-        .prepare('INSERT INTO users (email, name, password_hash, role, locale, timezone) VALUES (?, ?, ?, ?, ?, ?)')
-        .run(u.email.trim().toLowerCase(), u.name, u.passwordHash, u.role, u.locale ?? 'it', u.timezone ?? 'Europe/Rome')
-    );
-    db.prepare("INSERT INTO accounts (user_id, name, kind) VALUES (?, 'Contanti', 'cash')").run(id);
-    db.prepare(
-      "INSERT INTO buckets (user_id, name, category, kind, fill_type, leftover) VALUES (?, 'Risparmio', 'savings', 'saving', 'remainder', 'carry')"
-    ).run(id);
-    return findUser(db, id)!;
-  });
+  const id = insertedId(
+    db
+      .prepare('INSERT INTO users (email, name, password_hash, role, locale, timezone) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(u.email.trim().toLowerCase(), u.name, u.passwordHash, u.role, u.locale ?? 'it', u.timezone ?? 'Europe/Rome')
+  );
+  return findUser(db, id)!;
 }
 
 const PROFILE_COLUMNS = {

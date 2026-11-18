@@ -333,3 +333,20 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
 6. **Andamento** ✅: entrate base e spese per mese (6 o 12 mesi, un solo asse, tabella consultabile), spesa di
    ogni bucket con la media dei mesi precedenti. Colori dei grafici validati per daltonismo e contrasto, in
    chiaro e in scuro.
+
+## 12. Versione 0.7: miglioramenti
+
+1. Scorrere a sinistra elimina conti, bucket, entrate e spese in coda; conti e bucket con storia si archiviano.
+2. I chip vanno a capo; 3. conti e bucket archiviati in una sezione chiusa in fondo; 4. i conti si modificano
+   toccandoli; 5. il tipo non si ripete quando coincide col nome.
+6. Niente menu di sistema: chip per poche opzioni, pannello dal basso con icone e ricerca per le liste lunghe.
+7. Date con scorciatoie Adesso/Oggi, Ieri, Altro giorno.
+8. Pagina "Informazioni su Cashket": come funziona, open source, self-hosted, novità.
+9. Bucket consigliati (Casa 25%, Spesa 15%, Bollette 8%, Trasporti 8%, Svago 7%, Ristoranti 5%, Salute 3%,
+   Abbonamenti 2%, Vacanze 5% e Fondo emergenze 5% in accumulo, Risparmio il resto), con "Aggiungi i bucket
+   consigliati" per chi ha già l'account.
+10. Pulsante tondo + nella home e nella coda.
+11. Tutorial al primo accesso (cos'è un bucket, come si riempie, entrate, conti, bucket, promemoria), saltabile:
+    "Salta" crea Contanti e i bucket consigliati. Si può rivedere dal profilo senza toccare i dati.
+12. "Azzera l'account": cancella dati, conti e bucket, tiene accesso e impostazioni, chiede password e AZZERA,
+    poi riparte il tutorial.

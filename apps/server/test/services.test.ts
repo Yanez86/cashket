@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { BucketInput } from '@cashket/shared';
-import { memoryDb } from './sqlite.ts';
+import { memoryDb, seed } from './sqlite.ts';
 import { createUser, findUser, updateProfile } from '../src/services/users.ts';
 import { createAccount, listAccounts, updateAccount } from '../src/services/accounts.ts';
 import { createBucket, listBuckets, setArchived, updateBucket } from '../src/services/buckets.ts';
@@ -14,6 +14,7 @@ import { HttpError } from '../src/errors.ts';
 function person(name = 'Anna') {
   const db = memoryDb();
   const user = createUser(db, { name, email: `${name}@casa.it`, passwordHash: 'x', role: 'admin' });
+  seed(db, user.id);
   return { db, user: updateProfile(db, user.id, { percentBase: 'current' }) };
 }
 
@@ -37,7 +38,7 @@ const code = (fn: () => unknown) => {
   return 'none';
 };
 
-test('a new person has a cash account and a remainder bucket', () => {
+test('a seeded person has a cash account and a remainder bucket', () => {
   const { db, user } = person();
   assert.deepEqual(listAccounts(db, user.id).map((a) => [a.name, a.kind]), [['Contanti', 'cash']]);
   const [risparmio] = listBuckets(db, user.id);
@@ -129,6 +130,7 @@ test('budget: fill, move, close, reopen', () => {
 test('budget: previous month income by default', () => {
   const db = memoryDb();
   const user = createUser(db, { name: 'Bea', email: 'bea@casa.it', passwordHash: 'x', role: 'member' });
+  seed(db, user.id);
   const [cash] = listAccounts(db, user.id);
   addIncome(db, user.id, { accountId: cash.id, date: '2026-10-27', amountCents: 100000, description: 'Stipendio', budgetBase: true });
   const view = budgetView(db, user, '2026-11');
@@ -140,6 +142,8 @@ test('people do not see each other', () => {
   const db = memoryDb();
   const a = createUser(db, { name: 'A', email: 'a@casa.it', passwordHash: 'x', role: 'admin' });
   const b = createUser(db, { name: 'B', email: 'b@casa.it', passwordHash: 'x', role: 'member' });
+  seed(db, a.id);
+  seed(db, b.id);
   const bBucket = listBuckets(db, b.id)[0];
   assert.equal(code(() => setArchived(db, a.id, bBucket.id, true)), 'notFound');
   assert.equal(listBuckets(db, a.id).length, 1);
@@ -183,4 +187,62 @@ test('reminders: on, something to do, old session, right hour, once a day', asyn
   db.prepare('UPDATE users SET last_session_at = ?, last_reminded_on = NULL WHERE id = ?').run('2026-11-14T10:00:00Z', user.id);
   assert.equal(dueReminders(db, evening).length, 0); // session 3 days ago
   assert.equal(dueReminders(db, new Date('2026-11-22T18:30:00Z')).length, 1);
+});
+
+test('onboarding: skip, complete, recommended, delete, reset', async () => {
+  const { addRecommended, completeOnboarding, resetAccount, skipOnboarding } = await import('../src/services/onboarding.ts');
+  const { deleteAccount } = await import('../src/services/accounts.ts');
+  const { deleteBucket } = await import('../src/services/buckets.ts');
+  const { STARTER_BUCKETS, monthOf } = await import('@cashket/shared');
+  const db = memoryDb();
+  const anna = createUser(db, { name: 'Anna', email: 'anna@casa.it', passwordHash: 'x', role: 'admin' });
+  assert.equal(findUser(db, anna.id)?.onboarded_at, null);
+  assert.equal(listAccounts(db, anna.id).length, 0);
+
+  // Skip: cash and every recommended bucket.
+  const skipped = skipOnboarding(db, anna);
+  assert.ok(skipped.onboarded_at);
+  assert.deepEqual(listAccounts(db, anna.id).map((a) => a.kind), ['cash']);
+  assert.equal(listBuckets(db, anna.id).length, STARTER_BUCKETS.length);
+  assert.equal(addRecommended(db, anna.id), 0);
+
+  // Complete: accounts with a card charged to the checking account, chosen buckets, income, month filled.
+  const bea = createUser(db, { name: 'Bea', email: 'bea@casa.it', passwordHash: 'x', role: 'member' });
+  completeOnboarding(db, bea, {
+    percentBase: 'current',
+    monthlyIncomeCents: 200000,
+    accounts: [
+      { name: 'Banco BPM', kind: 'checking', settlesTo: null },
+      { name: 'Nexi', kind: 'card', settlesTo: 0 },
+      { name: 'Contanti', kind: 'cash', settlesTo: null }
+    ],
+    buckets: [
+      { name: 'Spesa', category: 'groceries', kind: 'spend', percent: 20, goalCents: null },
+      { name: 'Risparmio', category: 'savings', kind: 'saving', percent: null, goalCents: null }
+    ],
+    sessionReminderDays: 7
+  });
+  const accounts = listAccounts(db, bea.id);
+  assert.equal(accounts[1].settlesToAccountId, accounts[0].id);
+  const month = monthOf(new Date(), 'Europe/Rome');
+  const view = budgetView(db, findUser(db, bea.id)!, month);
+  assert.deepEqual(view.buckets.map((b) => b.balanceCents), [40000, 160000]);
+  assert.equal(findUser(db, bea.id)?.session_reminder_days, 7);
+  assert.equal(addRecommended(db, bea.id), STARTER_BUCKETS.length - 2);
+
+  // Delete only what has no history.
+  assert.equal(code(() => deleteAccount(db, bea.id, accounts[0].id)), 'accountUsed');
+  deleteAccount(db, bea.id, accounts[1].id);
+  const spesa = listBuckets(db, bea.id).find((b) => b.name === 'Spesa')!;
+  assert.equal(spesa.hasHistory, true);
+  assert.equal(code(() => deleteBucket(db, bea.id, spesa.id)), 'bucketUsed');
+  const casa = listBuckets(db, bea.id).find((b) => b.name === 'Casa')!;
+  deleteBucket(db, bea.id, casa.id);
+
+  // Reset: empty again, tutorial again; Anna untouched.
+  resetAccount(db, bea.id);
+  assert.equal(listAccounts(db, bea.id).length, 0);
+  assert.equal(listBuckets(db, bea.id).length, 0);
+  assert.equal(findUser(db, bea.id)?.onboarded_at, null);
+  assert.equal(listBuckets(db, anna.id).length, STARTER_BUCKETS.length);
 });

@@ -44,7 +44,7 @@ export function overspendOf(r: BucketRow): OverspendPolicy {
     : { type: 'carry' };
 }
 
-export const toBucket = (r: BucketRow): Bucket => ({
+export const toBucket = (r: BucketRow, hasHistory = false): Bucket => ({
   id: r.id,
   name: r.name,
   icon: r.category
@@ -56,7 +56,8 @@ export const toBucket = (r: BucketRow): Bucket => ({
   leftover: leftoverOf(r),
   overspend: overspendOf(r),
   position: r.position,
-  archived: !!r.archived
+  archived: !!r.archived,
+  hasHistory
 });
 
 export const bucketRows = (db: Sqlite, userId: number, withArchived = true) =>
@@ -64,7 +65,10 @@ export const bucketRows = (db: Sqlite, userId: number, withArchived = true) =>
     .prepare(`SELECT * FROM buckets WHERE user_id = ? ${withArchived ? '' : 'AND archived = 0'} ORDER BY archived, position, id`)
     .all(userId) as BucketRow[];
 
-export const listBuckets = (db: Sqlite, userId: number) => bucketRows(db, userId).map(toBucket);
+export function listBuckets(db: Sqlite, userId: number): Bucket[] {
+  const used = usedBucketIds(db, userId);
+  return bucketRows(db, userId).map((r) => toBucket(r, used.has(r.id)));
+}
 
 function ownBucket(db: Sqlite, userId: number, id: number): BucketRow {
   const row = db.prepare('SELECT * FROM buckets WHERE id = ? AND user_id = ?').get(id, userId) as BucketRow | undefined;
@@ -72,7 +76,8 @@ function ownBucket(db: Sqlite, userId: number, id: number): BucketRow {
   return row;
 }
 
-export const getBucket = (db: Sqlite, userId: number, id: number) => toBucket(ownBucket(db, userId, id));
+export const getBucket = (db: Sqlite, userId: number, id: number) =>
+  toBucket(ownBucket(db, userId, id), !!db.prepare('SELECT 1 FROM budget_entries WHERE bucket_id = ? LIMIT 1').get(id));
 
 /** Column values for a bucket, after checking what the form cannot check on its own. */
 function columns(db: Sqlite, userId: number, input: BucketInput, selfId?: number) {
@@ -154,3 +159,17 @@ export function reorderBuckets(db: Sqlite, userId: number, ids: number[]) {
     ids.forEach((id, position) => db.prepare('UPDATE buckets SET position = ? WHERE id = ? AND user_id = ?').run(position, id, userId));
   });
 }
+
+/** Deletes a bucket that never held money; one with history can only be archived. */
+export function deleteBucket(db: Sqlite, userId: number, id: number) {
+  ownBucket(db, userId, id);
+  if (db.prepare('SELECT 1 FROM budget_entries WHERE bucket_id = ? LIMIT 1').get(id)) throw conflict('bucketUsed');
+  db.transaction(() => {
+    db.prepare("UPDATE buckets SET leftover = 'carry', leftover_to_bucket_id = NULL WHERE leftover_to_bucket_id = ?").run(id);
+    db.prepare("UPDATE buckets SET overspend = 'carry', overspend_from_bucket_id = NULL WHERE overspend_from_bucket_id = ?").run(id);
+    db.prepare('DELETE FROM buckets WHERE id = ?').run(id);
+  });
+}
+
+export const usedBucketIds = (db: Sqlite, userId: number) =>
+  new Set((db.prepare('SELECT DISTINCT bucket_id AS id FROM budget_entries WHERE user_id = ?').all(userId) as { id: number }[]).map((r) => r.id));

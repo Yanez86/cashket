@@ -8,6 +8,7 @@
   import { app, errorMessage } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
   import MoneyField from '$lib/MoneyField.svelte';
+  import Picker from '$lib/Picker.svelte';
   import { monthLabel } from '$lib/buckets';
 
   const fromUrl = page.url.searchParams.get('month') ?? '';
@@ -33,6 +34,8 @@
   });
 
   const buckets = $derived(view?.buckets.filter((b) => !b.archived) ?? []);
+  const options = (exclude: number | null = null) =>
+    buckets.map((b) => ({ value: b.id as number | null, label: b.name, sub: `restano ${formatCents(b.balanceCents)}`, icon: b.icon, disabled: b.id === exclude }));
   const balance = (id: number | null) => buckets.find((b) => b.id === id)?.balanceCents ?? 0;
 
   async function move(event: SubmitEvent) {
@@ -59,15 +62,11 @@
     <form class="card stack" onsubmit={move}>
       <div class="field">
         <label for="from">Da</label>
-        <select id="from" bind:value={fromId}>
-          {#each buckets as b (b.id)}<option value={b.id}>{b.name} · {formatCents(b.balanceCents)}</option>{/each}
-        </select>
+        <Picker id="from" label="Da quale bucket" options={options()} bind:value={fromId} />
       </div>
       <div class="field">
         <label for="to">A</label>
-        <select id="to" bind:value={toId}>
-          {#each buckets as b (b.id)}<option value={b.id} disabled={b.id === fromId}>{b.name} · {formatCents(b.balanceCents)}</option>{/each}
-        </select>
+        <Picker id="to" label="A quale bucket" options={options(fromId)} bind:value={toId} />
       </div>
       <MoneyField id="amount" label="Importo" bind:cents={amountCents} required />
       {#if amountCents && amountCents > balance(fromId)}

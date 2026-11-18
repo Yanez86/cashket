@@ -26,6 +26,8 @@ export interface User {
   sessionReminderDays: number | null;
   /** From which local hour the reminder may arrive. */
   reminderHour: number;
+  /** False until the welcome tutorial is finished or skipped. */
+  onboarded: boolean;
 }
 
 export interface Invite {
@@ -42,6 +44,8 @@ export interface Account {
   settlesToAccountId: number | null;
   position: number;
   archived: boolean;
+  /** Has lines: can be archived, not deleted. */
+  hasHistory: boolean;
 }
 
 export interface Bucket {
@@ -55,10 +59,12 @@ export interface Bucket {
   overspend: OverspendPolicy;
   position: number;
   archived: boolean;
+  /** Has held money: can be archived, not deleted. */
+  hasHistory: boolean;
 }
 
 /** What a bucket's create or edit form sends. */
-export type BucketInput = Omit<Bucket, 'id' | 'position' | 'archived'>;
+export type BucketInput = Omit<Bucket, 'id' | 'position' | 'archived' | 'hasHistory'>;
 
 export interface Income {
   id: number;

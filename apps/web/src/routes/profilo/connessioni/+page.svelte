@@ -9,6 +9,8 @@
   import { errorMessage } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
   import Icon from '$lib/Icon.svelte';
+  import Picker from '$lib/Picker.svelte';
+  import { accountImg } from '$lib/accounts';
 
   let bank = $state<BankApp | null>(null);
   let connections = $state<BankConnection[]>([]);
@@ -164,10 +166,12 @@
           {#each c.accounts as a (a.uid)}
             <div class="field">
               <label for="acc-{c.id}-{a.uid}">{a.name}{a.iban ? ` · …${a.iban.slice(-4)}` : ''}</label>
-              <select id="acc-{c.id}-{a.uid}" value={a.accountId} onchange={(e) => map(c, a.uid, e.currentTarget.value ? Number(e.currentTarget.value) : null)}>
-                <option value="">Non importare</option>
-                {#each importable as acc (acc.id)}<option value={acc.id}>{acc.name}</option>{/each}
-              </select>
+              <Picker
+                id="acc-{c.id}-{a.uid}"
+                label="Movimenti in"
+                options={[{ value: null, label: 'Non importare' }, ...importable.map((acc) => ({ value: acc.id as number | null, label: acc.name, img: accountImg(acc) }))]}
+                value={a.accountId}
+                onchange={(v) => map(c, a.uid, v)} />
             </div>
           {/each}
           {#if c.status === 'active'}

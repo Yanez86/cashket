@@ -157,6 +157,11 @@ a {
   padding: 0 16px 120px;
 }
 
+/* Room for the round + button so it never covers the last row. */
+.page:has(~ .fab) {
+  padding-bottom: 196px;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -287,7 +292,8 @@ a {
 
 /* iOS Safari gives date/time inputs an intrinsic min-width that overflows narrow screens. */
 input[type='date'],
-input[type='time'] {
+input[type='time'],
+input[type='datetime-local'] {
   -webkit-appearance: none;
   appearance: none;
   display: block;
@@ -297,7 +303,8 @@ input[type='time'] {
 }
 
 input[type='date']::-webkit-date-and-time-value,
-input[type='time']::-webkit-date-and-time-value {
+input[type='time']::-webkit-date-and-time-value,
+input[type='datetime-local']::-webkit-date-and-time-value {
   text-align: left;
 }
 
@@ -327,9 +334,8 @@ input[type='time']::-webkit-date-and-time-value {
 
 .chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
 }
 
 .chip {

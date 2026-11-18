@@ -8,6 +8,10 @@
   import TopBar from '$lib/TopBar.svelte';
   import SectionIcon from '$lib/SectionIcon.svelte';
   import Icon from '$lib/Icon.svelte';
+  import Swipeable from '$lib/Swipeable.svelte';
+  import Fab from '$lib/Fab.svelte';
+  import { del } from '$lib/api';
+  import { refreshQueue } from '$lib/offline.svelte';
 
   type Row = Pick<Capture, 'amountCents' | 'spentAt' | 'accountId' | 'note'> & { id: number | null; key: string };
 
@@ -46,6 +50,17 @@
     }
     return [...groups.entries()];
   });
+  async function remove(id: number) {
+    error = '';
+    try {
+      await del(`/captures/${id}`);
+      captures = captures.filter((c) => c.id !== id);
+      await refreshQueue();
+    } catch (e) {
+      error = errorMessage(e);
+    }
+  }
+
   const total = $derived(rows.reduce((t, r) => t + r.amountCents, 0));
   const account = (id: number | null) => accounts.find((a) => a.id === id);
   const since = $derived(
@@ -58,11 +73,7 @@
 <svelte:head><title>Coda · Cashket</title></svelte:head>
 
 <main class="page">
-  <TopBar title="Coda" subtitle="{rows.length} {rows.length === 1 ? 'spesa' : 'spese'} · {formatCents(total)}" section="queue">
-    {#snippet actions()}
-      <a class="icon-btn primary" href="/nuova" aria-label="Aggiungi spesa"><Icon name="plus" /></a>
-    {/snippet}
-  </TopBar>
+  <TopBar title="Coda" subtitle="{rows.length} {rows.length === 1 ? 'spesa' : 'spese'} · {formatCents(total)}" section="queue" />
   <div class="stack" style="gap: 12px">
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     {#if !queue.online}<p class="notice">Sei offline: le spese nuove restano sul telefono e partono appena torna la rete.</p>{/if}
@@ -86,6 +97,7 @@
         </div>
         {#each list as r (r.key)}
           {@const a = account(r.accountId)}
+          <Swipeable label="Elimina {r.note ?? 'spesa'}" disabled={!r.id} ondelete={() => r.id && remove(r.id)} background="var(--surface)">
           <svelte:element this={r.id ? 'a' : 'div'} class="list-row link" href={r.id ? `/coda/${r.id}` : undefined}>
             {#if a}
               <img src="/accounts/{ACCOUNT_ICONS[a.kind]}.svg" alt="" width="40" height="40" />
@@ -98,6 +110,7 @@
             </div>
             <strong>{formatCents(r.amountCents)}</strong>
           </svelte:element>
+          </Swipeable>
         {/each}
       </section>
     {:else}
@@ -110,11 +123,9 @@
   </div>
 </main>
 
+<Fab />
+
 <style>
-  .primary {
-    background: var(--accent);
-    color: var(--on-accent);
-  }
   .session {
     display: flex;
     align-items: center;

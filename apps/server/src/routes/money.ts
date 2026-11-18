@@ -4,8 +4,9 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { AppContext } from '../app.ts';
 import { requireUser } from '../auth.ts';
-import { createAccount, listAccounts, updateAccount } from '../services/accounts.ts';
-import { createBucket, getBucket, listBuckets, reorderBuckets, setArchived, updateBucket } from '../services/buckets.ts';
+import { createAccount, deleteAccount, listAccounts, updateAccount } from '../services/accounts.ts';
+import { createBucket, deleteBucket, getBucket, listBuckets, reorderBuckets, setArchived, updateBucket } from '../services/buckets.ts';
+import { addRecommended } from '../services/onboarding.ts';
 import { addIncome, deleteIncome, listIncomes } from '../services/incomes.ts';
 import { createCapture, deleteCapture, listQueue, queueSummary, updateCapture } from '../services/captures.ts';
 import { trends } from '../services/trends.ts';
@@ -36,6 +37,11 @@ export async function moneyRoutes(app: FastifyInstance, { sqlite: db }: AppConte
     return updateAccount(db, user.id, id, body);
   });
 
+  app.delete('/accounts/:id', async (request) => {
+    deleteAccount(db, requireUser(request).id, params.parse(request.params).id);
+    return { ok: true };
+  });
+
   // ---------------------------------------------------------------- buckets
   app.get('/buckets', async (request) => listBuckets(db, requireUser(request).id));
 
@@ -52,6 +58,16 @@ export async function moneyRoutes(app: FastifyInstance, { sqlite: db }: AppConte
     const user = requireUser(request);
     const { archived } = z.object({ archived: z.boolean() }).parse(request.body);
     return setArchived(db, user.id, params.parse(request.params).id, archived);
+  });
+
+  app.delete('/buckets/:id', async (request) => {
+    deleteBucket(db, requireUser(request).id, params.parse(request.params).id);
+    return { ok: true };
+  });
+
+  app.post('/buckets/recommended', async (request) => {
+    const user = requireUser(request);
+    return { added: addRecommended(db, user.id), buckets: listBuckets(db, user.id) };
   });
 
   app.put('/buckets/order', async (request) => {

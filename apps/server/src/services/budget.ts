@@ -80,7 +80,7 @@ export function budgetView(db: Sqlite, user: UserRow, month: string): BudgetView
       const s = sums.get(r.id);
       const balanceCents = balanceOf(s);
       return {
-        ...toBucket(r),
+        ...toBucket(r, !!s),
         balanceCents,
         allocatedCents: s?.allocation ?? 0,
         spentCents: -(s?.spend ?? 0),

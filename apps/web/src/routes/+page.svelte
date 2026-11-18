@@ -8,6 +8,7 @@
   import Icon from '$lib/Icon.svelte';
   import BucketCard from '$lib/BucketCard.svelte';
   import { monthLabel } from '$lib/buckets';
+  import Fab from '$lib/Fab.svelte';
 
   const current = monthOf(new Date(), app.user?.timezone);
   let month = $state(current);
@@ -131,6 +132,8 @@
     </div>
   {/if}
 </main>
+
+<Fab />
 
 <style>
   .summary {

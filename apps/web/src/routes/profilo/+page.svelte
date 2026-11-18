@@ -5,6 +5,7 @@
   import type { User } from '@cashket/shared';
   import { app, errorMessage, setUser } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
+  import Picker from '$lib/Picker.svelte';
   import { clearApiCache } from '$lib/offline.svelte';
   import { pushSupport, subscribe, unsubscribe, currentSubscription } from '$lib/push';
   import { onMount } from 'svelte';
@@ -32,6 +33,7 @@
     [7, 'Ogni settimana'],
     [14, 'Ogni 2 settimane']
   ];
+  const HOURS = Array.from({ length: 24 }, (_, h) => ({ value: h as number | null, label: `${String(h).padStart(2, '0')}:00` }));
   let support = $state<ReturnType<typeof pushSupport>>('unsupported');
   let pushOn = $state(false);
   let pushMessage = $state('');
@@ -79,8 +81,27 @@
     { href: '/profilo/conti', label: 'Conti', help: 'Conto corrente, carte, PayPal, contanti' },
     { href: '/entrate', label: 'Entrate', help: 'Stipendio e altre entrate del mese' },
     { href: '/profilo/connessioni', label: 'Connessioni', help: 'Movimenti dalla banca in automatico (Enable Banking)' },
-    ...(app.user?.role === 'admin' ? [{ href: '/profilo/utenti', label: 'Utenti', help: 'Inviti e accessi della casa' }] : [])
+    ...(app.user?.role === 'admin' ? [{ href: '/profilo/utenti', label: 'Utenti', help: 'Inviti e accessi della casa' }] : []),
+    { href: '/benvenuto?rivedi=1', label: 'Rivedi il tutorial', help: 'Come funzionano bucket, coda e sessione' },
+    { href: '/profilo/info', label: 'Informazioni su Cashket', help: "Cos'è, open source, self-hosted, novità" }
   ]);
+
+  // Improvement 12: empty one's data and start again from the tutorial.
+  let resetOpen = $state(false);
+  let resetPassword = $state('');
+  let resetWord = $state('');
+  let resetError = $state('');
+  async function reset(event: SubmitEvent) {
+    event.preventDefault();
+    resetError = '';
+    try {
+      setUser(await post<User>('/me/reset', { password: resetPassword, confirm: resetWord.trim().toUpperCase() }));
+      await clearApiCache();
+      await goto('/benvenuto');
+    } catch (e) {
+      resetError = errorMessage(e);
+    }
+  }
 </script>
 
 <svelte:head><title>Profilo · Cashket</title></svelte:head>
@@ -134,9 +155,12 @@
       {#if app.user?.sessionReminderDays}
         <div class="field">
           <label for="hour">Dalle ore</label>
-          <select id="hour" value={app.user.reminderHour} onchange={(e) => save({ reminderHour: Number(e.currentTarget.value) })}>
-            {#each Array.from({ length: 24 }, (_, h) => h) as h (h)}<option value={h}>{String(h).padStart(2, '0')}:00</option>{/each}
-          </select>
+          <Picker
+            id="hour"
+            label="Dalle ore"
+            options={HOURS}
+            value={app.user.reminderHour as number | null}
+            onchange={(h) => h != null && save({ reminderHour: h })} />
         </div>
         {#if support === 'ok'}
           <div class="row">
@@ -155,11 +179,39 @@
     </section>
 
     <button class="btn btn-danger btn-block" type="button" onclick={logout}>Esci</button>
+
+    <section class="card stack danger-zone">
+      {#if !resetOpen}
+        <button class="btn btn-ghost danger-text" type="button" onclick={() => (resetOpen = true)}>Azzera l'account</button>
+      {:else}
+        <form class="stack" style="gap: 12px" onsubmit={reset}>
+          <h2 class="section-title danger-text">Azzera l'account</h2>
+          <p class="help">
+            Cancella conti, bucket, entrate, spese in coda, movimenti, regole, import e collegamenti con la banca. Restano il tuo accesso e le
+            impostazioni. Poi ricomincia il tutorial. <strong>Non si può annullare.</strong>
+          </p>
+          <div class="field">
+            <label for="reset-password">Password</label>
+            <input id="reset-password" type="password" autocomplete="current-password" required bind:value={resetPassword} />
+          </div>
+          <div class="field">
+            <label for="reset-word">Scrivi AZZERA per confermare</label>
+            <input id="reset-word" autocomplete="off" autocapitalize="characters" required bind:value={resetWord} />
+          </div>
+          {#if resetError}<p class="error" role="alert">{resetError}</p>{/if}
+          <button class="btn btn-danger btn-block" type="submit" disabled={resetWord.trim().toUpperCase() !== 'AZZERA' || !resetPassword}>Azzera tutto</button>
+          <button class="btn btn-ghost" type="button" onclick={() => (resetOpen = false)}>Annulla</button>
+        </form>
+      {/if}
+    </section>
     <p class="muted small" style="text-align: center">Cashket v{app.status?.version}</p>
   </div>
 </main>
 
 <style>
+  .danger-text {
+    color: var(--danger);
+  }
   .row {
     display: flex;
     gap: 8px;

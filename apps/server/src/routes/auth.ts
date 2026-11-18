@@ -6,7 +6,9 @@ import type { AppContext } from '../app.ts';
 import { SESSION_COOKIE, hashPassword, requireUser, signIn, signOut, verifyPassword } from '../auth.ts';
 import { HttpError, conflict, forbidden } from '../http.ts';
 import { deleteSessions, findValidInvite, markInviteUsed, randomToken, usePasswordReset } from '../services/access.ts';
-import { countActiveAdmins, countUsers, createUser, findUserByEmail, toUser, updateProfile } from '../services/users.ts';
+import { countActiveAdmins, countUsers, createUser, findUser, findUserByEmail, toUser, updateProfile } from '../services/users.ts';
+import { completeOnboarding, resetAccount, skipOnboarding } from '../services/onboarding.ts';
+import { CATEGORIES } from '@cashket/shared';
 import { zEmail, zLocale, zName, zPassword, zTheme, zTimezone } from '../validation.ts';
 
 const strict = { rateLimit: { max: 10, timeWindow: '5 minutes' } };
@@ -137,6 +139,45 @@ export async function authRoutes(app: FastifyInstance, { sqlite: db, config }: A
     // Whoever knew the old password is signed out everywhere else.
     deleteSessions(db, user.id, request.cookies[SESSION_COOKIE]);
     return { ok: true };
+  });
+
+  // ---------------------------------------------------------------- welcome tutorial
+  app.post('/onboarding/skip', async (request) => toUser(skipOnboarding(db, requireUser(request))));
+
+  app.post('/onboarding/complete', async (request) => {
+    const user = requireUser(request);
+    const keys = CATEGORIES.map((c) => c.key) as [string, ...string[]];
+    const body = z
+      .object({
+        percentBase: z.enum(['current', 'previous']),
+        monthlyIncomeCents: z.number().int().min(0).max(100_000_000).nullable(),
+        accounts: z
+          .array(z.object({ name: zName, kind: z.enum(['checking', 'card', 'paypal', 'cash']), settlesTo: z.number().int().min(0).max(20).nullable() }))
+          .max(20),
+        buckets: z
+          .array(
+            z.object({
+              name: zName,
+              category: z.enum(keys),
+              kind: z.enum(['spend', 'saving']),
+              percent: z.number().gt(0).max(100).nullable(),
+              goalCents: z.number().int().min(0).max(1_000_000_000).nullable()
+            })
+          )
+          .max(40),
+        sessionReminderDays: z.number().int().min(1).max(60).nullable()
+      })
+      .parse(request.body);
+    return toUser(completeOnboarding(db, user, body as Parameters<typeof completeOnboarding>[2]));
+  });
+
+  // Empties one's own data and starts over with the tutorial; asks the password and the word AZZERA.
+  app.post('/me/reset', { config: strict }, async (request) => {
+    const user = requireUser(request);
+    const body = z.object({ password: z.string().max(200), confirm: z.literal('AZZERA') }).parse(request.body);
+    if (!(await verifyPassword(user.password_hash, body.password))) throw new HttpError(400, 'wrongPassword');
+    resetAccount(db, user.id);
+    return toUser(findUser(db, user.id)!);
   });
 
   // Deleting one's own account removes every piece of one's data.

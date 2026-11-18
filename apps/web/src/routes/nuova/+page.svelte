@@ -8,6 +8,7 @@
   import { errorMessage } from '$lib/state.svelte';
   import TopBar from '$lib/TopBar.svelte';
   import Icon from '$lib/Icon.svelte';
+  import DateField from '$lib/DateField.svelte';
 
   const LAST_ACCOUNT = 'cashket-last-account';
 
@@ -15,8 +16,7 @@
   let accounts = $state<Account[]>([]);
   let accountId = $state<number | null>(null);
   let note = $state('');
-  let when = $state<'now' | 'other'>('now');
-  let otherTime = $state('');
+  let when = $state(new Date().toISOString());
   let message = $state('');
   let error = $state('');
   let busy = $state(false);
@@ -62,13 +62,14 @@
     busy = true;
     error = '';
     try {
-      const spentAt = when === 'other' && otherTime ? new Date(otherTime).toISOString() : new Date().toISOString();
+      // "Adesso" means the moment of the tap, not when the page opened.
+      const spentAt = Math.abs(Date.parse(when) - Date.now()) < 15 * 60_000 ? new Date().toISOString() : when;
       const result = await capture({ amountCents: cents, spentAt, accountId, note: note.trim() || null });
       if (accountId != null) localStorage.setItem(LAST_ACCOUNT, String(accountId));
       message = result === 'sent' ? `${formatCents(cents)} in coda.` : `${formatCents(cents)} salvata sul telefono: la invio appena torna la rete.`;
       digits = '';
       note = '';
-      when = 'now';
+      when = new Date().toISOString();
     } catch (e) {
       error = errorMessage(e);
     } finally {
@@ -113,16 +114,7 @@
       <input id="note" maxlength="200" autocomplete="off" placeholder="Pranzo, benzina…" bind:value={note} />
     </div>
 
-    <div class="field">
-      <span class="label" id="when">Quando</span>
-      <div class="chips" role="group" aria-labelledby="when">
-        <button class="chip" type="button" aria-pressed={when === 'now'} onclick={() => (when = 'now')}>Adesso</button>
-        <button class="chip" type="button" aria-pressed={when === 'other'} onclick={() => (when = 'other')}>Un altro momento</button>
-      </div>
-      {#if when === 'other'}
-        <input type="datetime-local" aria-label="Data e ora della spesa" bind:value={otherTime} />
-      {/if}
-    </div>
+    <DateField id="when" label="Quando" time bind:value={when} />
 
     <div class="keypad">
       {#each KEYS as key (key)}

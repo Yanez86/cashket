@@ -56,6 +56,9 @@
       void goto(`/login?next=${encodeURIComponent(path)}`, { replaceState: true });
     } else if (app.user && isPublic) {
       void goto(page.url.searchParams.get('next') || '/', { replaceState: true });
+    } else if (app.user && !app.user.onboarded && path !== '/benvenuto') {
+      // New account or just reset: the welcome tutorial first.
+      void goto('/benvenuto', { replaceState: true });
     }
   });
 
@@ -98,7 +101,7 @@
 
 {#if allowed}
   {@render children()}
-  {#if app.user}
+  {#if app.user && page.url.pathname !== '/benvenuto'}
   <nav class="tabbar" aria-label="Navigazione principale">
     {#each tabs as tab (tab.href)}
       <a href={tab.href} aria-current={activeTab === tab.href ? 'page' : undefined}>

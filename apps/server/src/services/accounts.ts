@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Account, AccountKind } from '@cashket/shared';
 import { insertedId, type Sqlite } from '../db/core.ts';
-import { badRequest, notFound } from '../errors.ts';
+import { badRequest, conflict, notFound } from '../errors.ts';
 
 interface AccountRow {
   id: number;
@@ -13,17 +13,20 @@ interface AccountRow {
   archived: number;
 }
 
-const toAccount = (r: AccountRow): Account => ({
+const toAccount = (r: AccountRow, hasHistory = false): Account => ({
   id: r.id,
   name: r.name,
   kind: r.kind,
   settlesToAccountId: r.settles_to_account_id,
   position: r.position,
-  archived: !!r.archived
+  archived: !!r.archived,
+  hasHistory
 });
 
-export const listAccounts = (db: Sqlite, userId: number) =>
-  (db.prepare('SELECT * FROM accounts WHERE user_id = ? ORDER BY archived, position, id').all(userId) as AccountRow[]).map(toAccount);
+export function listAccounts(db: Sqlite, userId: number): Account[] {
+  const used = usedAccountIds(db, userId);
+  return (db.prepare('SELECT * FROM accounts WHERE user_id = ? ORDER BY archived, position, id').all(userId) as AccountRow[]).map((r) => toAccount(r, used.has(r.id)));
+}
 
 function ownAccount(db: Sqlite, userId: number, id: number): AccountRow {
   const row = db.prepare('SELECT * FROM accounts WHERE id = ? AND user_id = ?').get(id, userId) as AccountRow | undefined;
@@ -31,7 +34,8 @@ function ownAccount(db: Sqlite, userId: number, id: number): AccountRow {
   return row;
 }
 
-export const getAccount = (db: Sqlite, userId: number, id: number) => toAccount(ownAccount(db, userId, id));
+export const getAccount = (db: Sqlite, userId: number, id: number) =>
+  toAccount(ownAccount(db, userId, id), !!db.prepare('SELECT 1 FROM transactions WHERE account_id = ? LIMIT 1').get(id));
 
 export interface AccountInput {
   name: string;
@@ -72,3 +76,27 @@ export function updateAccount(db: Sqlite, userId: number, id: number, patch: Par
   );
   return getAccount(db, userId, id);
 }
+
+/**
+ * Deletes an account that never had a line; one with history can only be archived. Bank connections stop
+ * feeding it and cards charged to it are no longer charged anywhere.
+ */
+export function deleteAccount(db: Sqlite, userId: number, id: number) {
+  ownAccount(db, userId, id);
+  if (db.prepare('SELECT 1 FROM transactions WHERE account_id = ? LIMIT 1').get(id)) throw conflict('accountUsed');
+  db.transaction(() => {
+    db.prepare('UPDATE accounts SET settles_to_account_id = NULL WHERE settles_to_account_id = ?').run(id);
+    const conns = db.prepare('SELECT id, accounts FROM bank_connections WHERE user_id = ?').all(userId) as { id: number; accounts: string }[];
+    for (const c of conns) {
+      const list = JSON.parse(c.accounts || '[]') as { accountId: number | null }[];
+      if (list.some((a) => a.accountId === id)) {
+        db.prepare('UPDATE bank_connections SET accounts = ? WHERE id = ?').run(JSON.stringify(list.map((a) => (a.accountId === id ? { ...a, accountId: null } : a))), c.id);
+      }
+    }
+    db.prepare('DELETE FROM accounts WHERE id = ?').run(id);
+  });
+}
+
+/** Whether each account has history (can only be archived) or can be deleted. */
+export const usedAccountIds = (db: Sqlite, userId: number) =>
+  new Set((db.prepare('SELECT DISTINCT account_id AS id FROM transactions WHERE user_id = ?').all(userId) as { id: number }[]).map((r) => r.id));

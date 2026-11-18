@@ -8,6 +8,9 @@
   import TopBar from '$lib/TopBar.svelte';
   import Icon from '$lib/Icon.svelte';
   import MoneyField from '$lib/MoneyField.svelte';
+  import DateField from '$lib/DateField.svelte';
+  import Swipeable from '$lib/Swipeable.svelte';
+  import { accountImg } from '$lib/accounts';
   import { monthLabel } from '$lib/buckets';
 
   const fromUrl = page.url.searchParams.get('month') ?? '';
@@ -54,7 +57,6 @@
   }
 
   async function remove(income: Income) {
-    if (!confirm(`Eliminare «${income.description}»?`)) return;
     try {
       await del(`/incomes/${income.id}`);
       incomes = incomes.filter((i) => i.id !== income.id);
@@ -76,18 +78,20 @@
   <div class="stack">
     <section class="card">
       {#each incomes as income (income.id)}
-        <div class="list-row">
-          <div style="flex: 1; min-width: 0">
-            <p>{income.description}</p>
-            <p class="muted small">{income.date} · {accountName(income.accountId)}{income.budgetBase ? ' · base budget' : ''}</p>
+        <Swipeable label="Elimina {income.description}" ondelete={() => remove(income)} background="var(--surface)">
+          <div class="list-row">
+            <div style="flex: 1; min-width: 0">
+              <p>{income.description}</p>
+              <p class="muted small">{income.date} · {accountName(income.accountId)}{income.budgetBase ? ' · base budget' : ''}</p>
+            </div>
+            <strong>{formatCents(income.amountCents)}</strong>
           </div>
-          <strong>{formatCents(income.amountCents)}</strong>
-          <button class="icon-btn plain" type="button" aria-label="Elimina {income.description}" onclick={() => remove(income)}><Icon name="trash" size={20} /></button>
-        </div>
+        </Swipeable>
       {:else}
         <p class="muted">Nessuna entrata in {monthLabel(month)}.</p>
       {/each}
     </section>
+    {#if incomes.length}<p class="muted small">Scorri a sinistra per eliminare un'entrata.</p>{/if}
 
     <form class="card stack" onsubmit={add}>
       <h2 class="section-title">Aggiungi un'entrata</h2>
@@ -97,15 +101,16 @@
       </div>
       <MoneyField id="amount" label="Importo" bind:cents={amountCents} required />
       <div class="field">
-        <label for="account">Conto</label>
-        <select id="account" bind:value={accountId}>
-          {#each accounts as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
-        </select>
+        <span class="label" id="account">Conto</span>
+        <div class="chips" role="group" aria-labelledby="account">
+          {#each accounts as a (a.id)}
+            <button class="chip" type="button" aria-pressed={accountId === a.id} onclick={() => (accountId = a.id)}>
+              <img src={accountImg(a)} alt="" width="22" height="22" />{a.name}
+            </button>
+          {/each}
+        </div>
       </div>
-      <div class="field">
-        <label for="date">Data</label>
-        <input id="date" type="date" required bind:value={date} />
-      </div>
+      <DateField id="date" label="Data" bind:value={date} />
       <label class="check">
         <input type="checkbox" bind:checked={budgetBase} />
         <span>Base budget <span class="muted small">— conta per i bucket a percentuale (sì per lo stipendio, no per rimborsi e giroconti)</span></span>

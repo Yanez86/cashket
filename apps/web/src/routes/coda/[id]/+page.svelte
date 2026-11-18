@@ -9,6 +9,8 @@
   import { refreshQueue } from '$lib/offline.svelte';
   import TopBar from '$lib/TopBar.svelte';
   import MoneyField from '$lib/MoneyField.svelte';
+  import DateField from '$lib/DateField.svelte';
+  import { accountImg } from '$lib/accounts';
 
   const id = Number(page.params.id);
   let loaded = $state(false);
@@ -20,11 +22,6 @@
   let error = $state('');
   let busy = $state(false);
 
-  /** ISO → value for a datetime-local input, in the device's time. */
-  const toLocal = (iso: string) => {
-    const d = new Date(iso);
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  };
 
   $effect(() => {
     Promise.all([get<Capture[]>('/captures'), get<Account[]>('/accounts')])
@@ -38,7 +35,7 @@
         amountCents = c.amountCents;
         accountId = c.accountId;
         note = c.note ?? '';
-        when = toLocal(c.spentAt);
+        when = c.spentAt;
         loaded = true;
       })
       .catch((e) => (error = errorMessage(e)));
@@ -50,7 +47,7 @@
     busy = true;
     error = '';
     try {
-      await patch(`/captures/${id}`, { amountCents, accountId, note: note.trim() || null, spentAt: new Date(when).toISOString() });
+      await patch(`/captures/${id}`, { amountCents, accountId, note: note.trim() || null, spentAt: when });
       await refreshQueue();
       await goto('/coda');
     } catch (e) {
@@ -80,20 +77,21 @@
     <form class="card stack" onsubmit={save}>
       <MoneyField id="amount" label="Importo" bind:cents={amountCents} required />
       <div class="field">
-        <label for="account">Conto</label>
-        <select id="account" bind:value={accountId}>
-          <option value={null}>Non indicato</option>
-          {#each accounts as a (a.id)}<option value={a.id}>{a.name}</option>{/each}
-        </select>
+        <span class="label" id="account">Conto</span>
+        <div class="chips" role="group" aria-labelledby="account">
+          <button class="chip" type="button" aria-pressed={accountId == null} onclick={() => (accountId = null)}>Non indicato</button>
+          {#each accounts as a (a.id)}
+            <button class="chip" type="button" aria-pressed={accountId === a.id} onclick={() => (accountId = a.id)}>
+              <img src={accountImg(a)} alt="" width="22" height="22" />{a.name}
+            </button>
+          {/each}
+        </div>
       </div>
       <div class="field">
         <label for="note">Nota</label>
         <input id="note" maxlength="200" bind:value={note} />
       </div>
-      <div class="field">
-        <label for="when">Quando</label>
-        <input id="when" type="datetime-local" required bind:value={when} />
-      </div>
+      <DateField id="when" label="Quando" time bind:value={when} />
       {#if error}<p class="error" role="alert">{error}</p>{/if}
       <button class="btn btn-primary btn-block" type="submit" disabled={busy || !amountCents}>Salva</button>
       <button class="btn btn-danger" type="button" onclick={remove}>Elimina</button>

@@ -45,6 +45,7 @@ test('setup, invite, budget', async () => {
 
   const me = await admin('POST', '/api/setup', { name: 'Anna', email: 'anna@casa.it', password: 'una password lunga' });
   assert.equal(me.json().role, 'admin');
+  assert.equal(me.json().onboarded, false);
   assert.equal((await admin('POST', '/api/setup', { name: 'X', email: 'x@casa.it', password: 'una password lunga' })).statusCode, 403);
 
   // Invite a second person.
@@ -78,7 +79,7 @@ test('setup, invite, budget', async () => {
   const view = (await admin('POST', '/api/budget/2026-11/allocate')).json();
   assert.equal(view.allocated, true);
   assert.equal(view.buckets.find((b: { id: number }) => b.id === spesa.id).balanceCents, 45000);
-  assert.equal(view.unassignedCents, 0);
+  assert.equal(view.unassignedCents, 155000); // no remainder bucket: the rest waits to be assigned
 
   // An expense typed offline and sent twice is saved once.
   const capture = { amountCents: 1250, spentAt: '2026-11-17T12:05:00.000Z', accountId: conto.id, note: 'Pranzo', clientId: 'phone-0001' };
@@ -100,6 +101,9 @@ test('setup, invite, budget', async () => {
   await admin('POST', `/api/session/lines/${session.lines[0].id}/assign`, { bucketId: spesa.id, remember: true });
   assert.equal((await admin('POST', '/api/session/close')).statusCode, 200);
   assert.ok((await admin('GET', '/api/me')).json().lastSessionAt);
+
+  // Reset needs the password and the word.
+  assert.equal((await admin('POST', '/api/me/reset', { password: 'sbagliata', confirm: 'AZZERA' })).statusCode, 400);
 
   // Bea sees none of it.
   assert.equal((await bea('GET', '/api/captures')).json().length, 0);

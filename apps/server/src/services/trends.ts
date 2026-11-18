@@ -26,7 +26,7 @@ export function trends(db: Sqlite, userId: number, lastMonth: string, count: num
       spentCents: spent.filter((r) => r.month === month).reduce((t, r) => t + r.cents, 0)
     })),
     buckets: rows
-      .map((r) => ({ bucket: toBucket(r), spentCents: months.map((m) => spent.find((s) => s.month === m && s.bucket_id === r.id)?.cents ?? 0) }))
+      .map((r) => ({ bucket: toBucket(r, true), spentCents: months.map((m) => spent.find((s) => s.month === m && s.bucket_id === r.id)?.cents ?? 0) }))
       // Archived buckets only while they had spending in the window.
       .filter((b) => !b.bucket.archived || b.spentCents.some((c) => c !== 0))
       .sort((a, b) => b.spentCents.reduce((t, c) => t + c, 0) - a.spentCents.reduce((t, c) => t + c, 0))
