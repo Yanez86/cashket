@@ -145,3 +145,22 @@ test('session: cannot close with lines left, nor book in a closed month', () => 
   db.prepare("INSERT INTO periods (user_id, month, status) VALUES (?, '2026-11', 'closed') ON CONFLICT (user_id, month) DO UPDATE SET status = 'closed'").run(user.id);
   assert.equal(code(() => assignLine(db, user, view.lines[3].id, spesa.id, false)), 'periodClosed');
 });
+
+test('trends: income and spending by month and bucket', async () => {
+  const { trends } = await import('../src/services/trends.ts');
+  const { db, user, input } = setup();
+  const spesa = createBucket(db, user.id, spend('Spesa'));
+  const auto = createBucket(db, user.id, spend('Auto'));
+  importRows(db, user.id, input);
+  const view = prepareSession(db, user);
+  for (const l of view.lines.filter((x) => x.kind === 'expense')) assignLine(db, user, l.id, l.description.startsWith('Eni') ? auto.id : spesa.id, false);
+  setLineKind(db, user, view.lines.find((l) => l.kind === 'income')!.id, 'income', true, false);
+  const t = trends(db, user.id, '2026-12', 3);
+  assert.deepEqual(t.months, [
+    { month: '2026-10', incomeCents: 0, spentCents: 0 },
+    { month: '2026-11', incomeCents: 235000, spentCents: 11230 },
+    { month: '2026-12', incomeCents: 0, spentCents: 0 }
+  ]);
+  assert.deepEqual(t.buckets[0], { bucket: t.buckets[0].bucket, spentCents: [0, 6730, 0] });
+  assert.equal(t.buckets[0].bucket.name, 'Spesa');
+});

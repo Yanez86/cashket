@@ -27,6 +27,9 @@
   --near-ink: #8a6214;
   --danger: #b4344f;
   --on-danger: #ffffff;
+  /* Chart series (validated pair, docs/SPEC.md §9.3): income and spending. */
+  --series-income: #2a78d6;
+  --series-spent: #d0662a;
   --radius: 20px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Strength of the tinted circle behind category icons. */
@@ -68,6 +71,8 @@
     --near-ink: #ecd09a;
     --danger: #e8798f;
     --on-danger: #2a0a07;
+  --series-income: #3987e5;
+  --series-spent: #d9733a;
     --icon-tint: 26%;
   }
 }
@@ -96,6 +101,8 @@
   --near-ink: #ecd09a;
   --danger: #e8798f;
   --on-danger: #2a0a07;
+  --series-income: #3987e5;
+  --series-spent: #d9733a;
   --icon-tint: 26%;
 }
 

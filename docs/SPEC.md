@@ -330,4 +330,6 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
    cifrata), collegamento con ritorno su `/api/banking/callback`, scelta del conto Cashket per ogni conto della
    banca, download ogni 6 ore dal giorno dopo l'ultimo (5 giorni di margine), avviso push una settimana prima
    della scadenza del consenso, rinnovo che mantiene le scelte. Email di notifica per PayPal: non ancora.
-6. **Andamento**: grafici per bucket e per mese.
+6. **Andamento** ✅: entrate base e spese per mese (6 o 12 mesi, un solo asse, tabella consultabile), spesa di
+   ogni bucket con la media dei mesi precedenti. Colori dei grafici validati per daltonismo e contrasto, in
+   chiaro e in scuro.

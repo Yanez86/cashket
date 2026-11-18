@@ -8,9 +8,9 @@ abbina le spese ai movimenti della banca e tu le assegni ai bucket.
 
 ## Stato
 
-**Fase 5 di 6.** Il ciclo completo funziona: spese in coda durante la giornata (anche offline), poi la
+**Tutte le 6 fasi della specifica.** Il ciclo completo funziona: spese in coda durante la giornata (anche offline), poi la
 sessione: import del CSV della banca, abbinamento con la coda, assegnazione ai bucket con regole che imparano,
-revisione e chiusura. Ci sono anche i promemoria e l'import automatico dalla banca con Enable Banking. Mancano i grafici.
+revisione e chiusura. Ci sono anche i promemoria, l'import automatico dalla banca con Enable Banking e i grafici dell'andamento.
 
 - Specifica completa: **[docs/SPEC.md](docs/SPEC.md)**
 - Stack e struttura: gli stessi di [Mealler](https://github.com/Yanez86/mealler)
@@ -24,7 +24,7 @@ revisione e chiusura. Ci sono anche i promemoria e l'import automatico dalla ban
 | Sessione: import CSV, abbinamento, regole, revisione | ✅ |
 | Promemoria (badge sull'icona e notifiche push) | ✅ |
 | Import automatico (open banking Enable Banking) | ✅ |
-| Andamento | ⏳ |
+| Andamento: entrate e spese per mese, spese per bucket | ✅ |
 
 ## Struttura
 

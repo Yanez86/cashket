@@ -212,3 +212,9 @@ export interface BankConnection {
   /** The bank's accounts and the Cashket account each feeds (null = not imported). */
   accounts: { uid: string; name: string; iban: string | null; accountId: number | null }[];
 }
+
+export interface Trends {
+  months: { month: string; incomeCents: number; spentCents: number }[];
+  /** Spending of each bucket in the same months, most spent first. */
+  buckets: { bucket: Bucket; spentCents: number[] }[];
+}

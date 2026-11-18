@@ -8,6 +8,7 @@ import { createAccount, listAccounts, updateAccount } from '../services/accounts
 import { createBucket, getBucket, listBuckets, reorderBuckets, setArchived, updateBucket } from '../services/buckets.ts';
 import { addIncome, deleteIncome, listIncomes } from '../services/incomes.ts';
 import { createCapture, deleteCapture, listQueue, queueSummary, updateCapture } from '../services/captures.ts';
+import { trends } from '../services/trends.ts';
 import { allocate, budgetView, closePeriod, moveBetween, reopenPeriod } from '../services/budget.ts';
 import { zBucketInput, zCents, zDate, zId, zMonth, zName } from '../validation.ts';
 
@@ -134,6 +135,11 @@ export async function moneyRoutes(app: FastifyInstance, { sqlite: db }: AppConte
   });
 
   app.post('/budget/:month/close', async (request) => closePeriod(db, requireUser(request), monthParams.parse(request.params).month));
+
+  app.get('/trends', async (request) => {
+    const q = z.object({ to: zMonth, months: z.coerce.number().int().min(2).max(24).default(6) }).parse(request.query);
+    return trends(db, requireUser(request).id, q.to, q.months);
+  });
 
   app.post('/budget/:month/reopen', async (request) => reopenPeriod(db, requireUser(request), monthParams.parse(request.params).month));
 }
