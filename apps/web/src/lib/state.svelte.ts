@@ -54,6 +54,13 @@ const MESSAGES: Record<string, string> = {
   batchReviewed: 'Questo import è già stato chiuso in una sessione: non si può più annullare.',
   lineMatched: 'Questa riga è già abbinata a una spesa.',
   unassigned: 'Ci sono ancora righe senza bucket.',
+  bankAppMissing: "Prima inserisci l'applicazione Enable Banking.",
+  bankKey: 'La chiave privata non è valida: serve il file .pem RSA scaricato da Enable Banking.',
+  baseUrlMissing: "Serve l'indirizzo https di Cashket (CASHKET_BASE_URL nel file .env).",
+  bankState: 'Il collegamento non è andato a buon fine: riprova.',
+  bankNotActive: 'Questo collegamento non è attivo.',
+  bankExpired: 'Il consenso è scaduto: rinnova il collegamento.',
+  bankError: 'Enable Banking ha risposto con un errore.',
   pushOff: 'Le notifiche non sono attive sul server.',
   captureDone: 'Questa spesa è già stata sistemata in una sessione.',
   storageFull: 'Il telefono non ha spazio per tenere la spesa: riprova con la rete.'
@@ -61,5 +68,6 @@ const MESSAGES: Record<string, string> = {
 
 export function errorMessage(e: unknown): string {
   const code = e instanceof ApiError ? e.code : 'internal';
-  return MESSAGES[code] ?? 'Qualcosa è andato storto.';
+  const text = MESSAGES[code] ?? 'Qualcosa è andato storto.';
+  return e instanceof ApiError && e.detail ? `${text} (${e.detail})` : text;
 }

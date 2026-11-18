@@ -15,6 +15,8 @@ import { moneyRoutes } from './routes/money.ts';
 import { sessionRoutes } from './routes/session.ts';
 import { pushRoutes } from './routes/push.ts';
 import type { PushSender } from './push.ts';
+import type { SecretBox } from './secrets.ts';
+import { bankingRoutes } from './routes/banking.ts';
 import { PERMISSIONS_POLICY, contentSecurityPolicy } from './security.ts';
 
 export interface AppContext {
@@ -22,6 +24,8 @@ export interface AppContext {
   config: Config;
   /** Absent in tests: push routes then answer that notifications are off. */
   push?: PushSender;
+  /** Encrypts secrets kept in the database (bank keys). */
+  box: SecretBox;
 }
 
 export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {}): Promise<FastifyInstance> {
@@ -64,6 +68,7 @@ export async function buildApp(ctx: AppContext, opts: { logger?: boolean } = {})
       await api.register(async (scope) => moneyRoutes(scope, ctx));
       await api.register(async (scope) => sessionRoutes(scope, ctx));
       await api.register(async (scope) => pushRoutes(scope, ctx), { prefix: '/push' });
+      await api.register(async (scope) => bankingRoutes(scope, ctx), { prefix: '/banking' });
     },
     { prefix: '/api' }
   );

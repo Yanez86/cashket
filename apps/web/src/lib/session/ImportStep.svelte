@@ -131,7 +131,10 @@
 </script>
 
 <div class="stack" style="gap: 12px">
-  <p class="muted">Scarica i movimenti dall'home banking e dall'area della carta in formato CSV, poi caricali qui, un conto alla volta.</p>
+  <p class="muted">
+    Scarica i movimenti dall'home banking e dall'area della carta in formato CSV, poi caricali qui, un conto alla volta.
+    I conti collegati in <a href="/profilo/connessioni">Connessioni</a> arrivano da soli.
+  </p>
 
   {#if !importable.length}
     <p class="notice">Prima aggiungi i tuoi conti in <a href="/profilo/conti">Profilo › Conti</a>.</p>

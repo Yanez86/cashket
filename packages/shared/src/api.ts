@@ -185,3 +185,30 @@ export interface SessionView {
   /** Lines that still need a decision before the session can be closed. */
   open: number;
 }
+
+export interface BankApp {
+  configured: boolean;
+  appId: string | null;
+  /** Where the bank sends the person back: to register in the Enable Banking application. */
+  redirectUrl: string;
+}
+
+export interface Aspsp {
+  name: string;
+  country: string;
+  logo: string | null;
+  /** Longest consent the bank gives, in days. */
+  maxConsentDays: number | null;
+}
+
+export interface BankConnection {
+  id: number;
+  aspspName: string;
+  aspspCountry: string;
+  status: 'pending' | 'active' | 'expired' | 'error';
+  consentExpiresAt: string | null;
+  lastFetchedAt: string | null;
+  lastError: string | null;
+  /** The bank's accounts and the Cashket account each feeds (null = not imported). */
+  accounts: { uid: string; name: string; iban: string | null; accountId: number | null }[];
+}

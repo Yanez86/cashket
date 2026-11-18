@@ -3,10 +3,13 @@
 export class ApiError extends Error {
   status: number;
   code: string;
-  constructor(status: number, code: string) {
+  /** Extra words from the server, e.g. what the bank answered. */
+  detail: string | null;
+  constructor(status: number, code: string, detail: string | null = null) {
     super(code);
     this.status = status;
     this.code = code;
+    this.detail = detail;
   }
 }
 
@@ -30,7 +33,7 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
   if (!response.ok) {
     const code = (data as { error?: string }).error ?? 'internal';
     if (response.status === 401 && code === 'unauthorized') session.expired();
-    throw new ApiError(response.status, code);
+    throw new ApiError(response.status, code, (data as { detail?: string }).detail ?? null);
   }
   return data as T;
 }

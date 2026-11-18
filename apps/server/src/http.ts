@@ -10,6 +10,8 @@ export function errorHandler(error: FastifyError | Error, request: FastifyReques
     return reply.status(400).send({ error: 'validation', issues: error.issues.map((i) => ({ path: i.path, code: i.code })) });
   }
   if (error instanceof HttpError) {
+    // What the bank answered helps the person fix the setup (wrong key, unknown application…).
+    if (error.code === 'bankError') return reply.status(error.statusCode).send({ error: error.code, detail: error.message });
     return reply.status(error.statusCode).send({ error: error.code });
   }
   const statusCode = (error as FastifyError).statusCode;

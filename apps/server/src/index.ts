@@ -5,6 +5,8 @@ import { buildApp } from './app.ts';
 import { createPasswordReset } from './services/access.ts';
 import { createPushSender, pushToUser } from './push.ts';
 import { dueReminders, markReminded, reminderText } from './services/reminders.ts';
+import { createSecretBox, loadSecretKey } from './secrets.ts';
+import { expiringConnections, markExpiryWarned, syncAll } from './services/banking.ts';
 import { findUserByEmail } from './services/users.ts';
 
 const config = loadConfig();
@@ -24,7 +26,8 @@ if (process.argv[2] === 'reset-password') {
   process.exit(0);
 }
 const push = createPushSender(sqlite, config);
-const app = await buildApp({ sqlite, config, push });
+const box = createSecretBox(loadSecretKey(config.dataDir));
+const app = await buildApp({ sqlite, config, push, box });
 if (applied.length) app.log.info({ applied }, 'database migrations applied');
 
 // Session reminders (docs/SPEC.md §5.2): every quarter of an hour, who is due gets one notification a day.
@@ -39,11 +42,31 @@ async function remind() {
   }
 }
 const reminderTimer = setInterval(() => void remind(), 15 * 60_000);
+
+// Bank connections (docs/SPEC.md §7.5): download every six hours, warn a week before consent ends.
+async function banking() {
+  const added = await syncAll({ db: sqlite, box, baseUrl: config.baseUrl });
+  if (added) app.log.info({ added }, 'bank lines downloaded');
+  for (const c of expiringConnections(sqlite)) {
+    const day = new Date(c.consent_expires_at).toLocaleDateString('it-IT');
+    await pushToUser(sqlite, push, c.user_id, {
+      title: 'Rinnova il collegamento',
+      body: `Il consenso per ${c.aspsp_name} scade il ${day}: rinnovalo per continuare a ricevere i movimenti.`,
+      url: '/profilo/connessioni',
+      tag: `cashket-bank-${c.id}`
+    }).catch(() => 0);
+    markExpiryWarned(sqlite, c.id);
+  }
+}
+const bankTimer = setInterval(() => void banking().catch((error) => app.log.warn({ error }, 'bank download failed')), 6 * 60 * 60_000);
+bankTimer.unref();
+setTimeout(() => void banking().catch(() => {}), 60_000).unref();
 reminderTimer.unref();
 
 const shutdown = async (signal: string) => {
   app.log.info(`received ${signal}, shutting down`);
   clearInterval(reminderTimer);
+  clearInterval(bankTimer);
   await app.close();
   sqlite.close();
   process.exit(0);

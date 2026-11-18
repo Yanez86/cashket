@@ -89,6 +89,8 @@ export interface ImportInput {
   fileSha256: string | null;
   rows: ImportRow[];
   profile: { headerFingerprint: string; mapping: ImportMapping } | null;
+  /** Lines downloaded from a bank connection rather than a file. */
+  connectionId?: number | null;
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -120,8 +122,8 @@ export function importRows(db: Sqlite, userId: number, input: ImportInput): Impo
     const profileId = input.profile ? saveProfile(db, userId, input.accountId, input.profile.headerFingerprint, input.profile.mapping) : null;
     const batchId = insertedId(
       db
-        .prepare("INSERT INTO import_batches (user_id, source, profile_id, file_name, file_sha256, rows_read) VALUES (?, 'csv', ?, ?, ?, ?)")
-        .run(userId, profileId, input.fileName, input.fileSha256, input.rows.length)
+        .prepare('INSERT INTO import_batches (user_id, source, profile_id, connection_id, file_name, file_sha256, rows_read) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run(userId, input.connectionId ? 'api' : 'csv', profileId, input.connectionId ?? null, input.fileName, input.fileSha256, input.rows.length)
     );
     const seen = new Map<string, number>();
     const exists = db.prepare('SELECT 1 FROM transactions WHERE account_id = ? AND fingerprint = ?');

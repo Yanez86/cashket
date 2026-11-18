@@ -326,5 +326,8 @@ database, `MEALLER_TRUST_PROXY` → `CASHKET_TRUST_PROXY` per Cloudflare. Contai
    Profili pronti per YouWeb e Nexi quando ci saranno i file di esempio.
 4. **Promemoria** ✅: numero sull'icona dell'app e sulla tab Coda; notifica push una volta al giorno, dall'ora
    scelta, quando ci sono spese in coda e l'ultima sessione è più vecchia dell'intervallo scelto.
-5. **Import automatico**: Enable Banking, schermata Connessioni; poi email di notifica per PayPal.
+5. **Import automatico** ✅: Enable Banking in modalità restricted con l'applicazione di ciascuno (ID e chiave
+   cifrata), collegamento con ritorno su `/api/banking/callback`, scelta del conto Cashket per ogni conto della
+   banca, download ogni 6 ore dal giorno dopo l'ultimo (5 giorni di margine), avviso push una settimana prima
+   della scadenza del consenso, rinnovo che mantiene le scelte. Email di notifica per PayPal: non ancora.
 6. **Andamento**: grafici per bucket e per mese.

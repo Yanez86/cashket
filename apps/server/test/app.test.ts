@@ -7,12 +7,14 @@ import { loadConfig } from '../src/config.ts';
 import { migrate, openDatabase } from '../src/db/index.ts';
 import { buildApp } from '../src/app.ts';
 import { migrationsDir } from './sqlite.ts';
+import { randomBytes } from 'node:crypto';
+import { createSecretBox } from '../src/secrets.ts';
 
 async function setup() {
   const sqlite = openDatabase('', ':memory:');
   migrate(sqlite, migrationsDir);
   const config = { ...loadConfig({}), publicDir: '/nonexistent', baseUrl: 'https://cashket.test' };
-  return buildApp({ sqlite, config }, { logger: false });
+  return buildApp({ sqlite, config, box: createSecretBox(randomBytes(32)) }, { logger: false });
 }
 
 /** A browser-like client that keeps the session cookie. */

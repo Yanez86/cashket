@@ -78,6 +78,7 @@
     { href: '/profilo/bucket', label: 'Bucket', help: 'Regole di riempimento e di fine mese' },
     { href: '/profilo/conti', label: 'Conti', help: 'Conto corrente, carte, PayPal, contanti' },
     { href: '/entrate', label: 'Entrate', help: 'Stipendio e altre entrate del mese' },
+    { href: '/profilo/connessioni', label: 'Connessioni', help: 'Movimenti dalla banca in automatico (Enable Banking)' },
     ...(app.user?.role === 'admin' ? [{ href: '/profilo/utenti', label: 'Utenti', help: 'Inviti e accessi della casa' }] : [])
   ]);
 </script>
